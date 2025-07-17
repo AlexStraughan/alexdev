@@ -1,0 +1,429 @@
+/* Main styles for the website */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+}
+
+.hero-section {
+    text-align: center;
+    color: white;
+    z-index: 10;
+    position: relative;
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.greeting-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 600px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.greeting-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.greeting-card:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+#greetingText {
+    font-size: 1.4rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+#pointsDisplay {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    color: #4facfe;
+    text-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
+}
+
+#cpsDisplay {
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    color: #00f2fe;
+    display: none;
+}
+
+#clickHint {
+    font-size: 1rem;
+    margin-top: 1rem;
+    opacity: 0.8;
+    color: #ffffff;
+}
+
+/* Floating elements container */
+#floatingContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Don't block UI interactions */
+    z-index: 1; /* Behind UI elements */
+    overflow: hidden;
+}
+
+.floating-element {
+    font-size: 2rem;
+    position: absolute;
+    user-select: none;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    transition: transform 0.1s ease-out;
+    z-index: 1; /* Same as container */
+    pointer-events: none; /* Non-clickable floating elements */
+}
+
+.floating-element.large {
+    font-size: 3rem;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.4));
+}
+
+.floating-element.small {
+    font-size: 1.5rem;
+    opacity: 0.8;
+}
+
+.floating-element.linkedin-element {
+    z-index: 1001 !important;
+    pointer-events: auto !important;
+}
+
+/* Game Hub Styles */
+.game-hub-section {
+    display: none;
+    margin-top: 3rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease-out;
+}
+
+.game-hub-section.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.game-hub {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem auto;
+    max-width: 1000px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    z-index: 10; /* Ensure UI is above floating elements */
+}
+
+.status-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.status-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+}
+
+.status-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #4facfe;
+}
+
+/* Tab System */
+.tab-container {
+    margin-bottom: 2rem;
+}
+
+.tab-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.tab-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tab-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.tab-button.active {
+    background: rgba(79, 172, 254, 0.3);
+    border-color: #4facfe;
+    color: #4facfe;
+    font-weight: bold;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Skills Grid */
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.skill-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.skill-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.skill-card.affordable {
+    border-color: #4facfe;
+    background: rgba(79, 172, 254, 0.1);
+    box-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
+}
+
+.skill-card.affordable:hover {
+    background: rgba(79, 172, 254, 0.2);
+    transform: translateY(-5px) scale(1.02);
+}
+
+.skill-card.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.skill-card.locked:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.skill-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.skill-name {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #4facfe;
+}
+
+.skill-description {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+.skill-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.skill-owned {
+    color: #00f2fe;
+    font-weight: bold;
+}
+
+.skill-cost {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+/* Cost color changes based on affordability */
+.skill-card.affordable .skill-cost {
+    color: #4ade80; /* Green when affordable */
+}
+
+.skill-card.locked .skill-cost {
+    color: #ff6b6b; /* Red when not affordable */
+}
+
+.skill-production {
+    font-size: 0.85rem;
+    color: #ffffff;
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+}
+
+.producing-line {
+    font-size: 0.85rem;
+    color: #4facfe;
+    margin-top: 0.5rem;
+}
+
+/* Achievement popup */
+.achievement-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #333;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+    z-index: 1002;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-out;
+    max-width: 300px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.achievement-popup.show {
+    transform: translateX(0);
+}
+
+/* Milestone effect */
+.milestone-effect {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    z-index: 1003;
+    pointer-events: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .greeting-card {
+        padding: 1.5rem;
+        margin: 1rem auto;
+    }
+    
+    .skills-grid {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+    
+    .tab-buttons {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .tab-button {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .status-bar {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .floating-element {
+        font-size: 1.5rem;
+    }
+    
+    .floating-element.large {
+        font-size: 2rem;
+    }
+    
+    .floating-element.small {
+        font-size: 1rem;
+    }
+    
+    #pointsDisplay {
+        font-size: 1.5rem;
+    }
+    
+    .status-bar {
+        grid-template-columns: 1fr;
+    }
+}

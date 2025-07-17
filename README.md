@@ -1,13 +1,69 @@
-# Alex Straughan - Personal Website
+# Alex Straughan - Developer Portfolio
 
-A modern, interactive Ruby Sinatra website showcasing Alex Straughan as a software developer.
+A Ruby Sinatra-based portfolio website featuring an interactive physics simulation and cookie clicker-style game.
+
+## Project Structure
+
+### Backend (Ruby/Sinatra)
+- `app.rb` - Main Sinatra application with API endpoints
+- `views/index.erb` - Main HTML template
+
+### Frontend (Modular JavaScript)
+- `public/js/app.js` - Main application entry point and initialization
+- `public/js/game.js` - Cookie clicker game logic and state management
+- `public/js/physics.js` - Physics simulation for floating elements
+- `public/js/effects.js` - Visual effects and animations
+- `public/js/ui.js` - UI management and interactions
+
+### Styles
+- `public/css/styles.css` - Main stylesheet with responsive design
 
 ## Features
 
-- **Interactive Homepage**: Beautiful gradient background with floating animations
-- **Dynamic Greetings**: Click the greeting card for randomized welcome messages
-- **Skills Showcase**: Animated skill cards with progress bars
-- **Responsive Design**: Works perfectly on desktop and mobile devices
+### Interactive Portfolio
+- Modern glassmorphism design
+- Responsive layout
+- Professional presentation
+
+### Physics Simulation
+- 45+ floating emoji elements with realistic physics
+- Collision detection and response
+- Mouse repulsion effects
+- Special LinkedIn element with unique behavior
+
+### Cookie Clicker Game
+- Click-based point generation with critical hits
+- 6 types of code generators (Junior Dev, Senior Dev, etc.)
+- Generator-specific upgrade system
+- Achievement system
+- Progressive revelation (unlocks after 15 clicks)
+- Auto-save functionality
+
+### LinkedIn Integration
+- Special floating LinkedIn element
+- Clickable to open Alex's LinkedIn profile
+- Affects other elements but isn't affected by them
+- Higher z-index to stay above UI elements
+
+## Technical Architecture
+
+### Modular Design
+- **Separation of Concerns**: Each system (game, physics, effects, UI) is in its own module
+- **Class-Based Architecture**: Modern ES6 classes for better organization
+- **Global Communication**: Systems communicate through window-scoped instances
+- **Event-Driven**: Loose coupling between components
+
+### Performance Optimizations
+- Efficient DOM updates without full re-renders
+- Smart collision detection for physics
+- Optimized animation loops (60fps for physics, 10fps for game logic)
+- Local storage for game state persistence
+
+### Game Mechanics
+- **Exponential Pricing**: Generator costs increase by 15% per purchase
+- **Generator-Specific Upgrades**: Each generator type has its own upgrade tree
+- **Critical Hit System**: Chance-based damage multipliers
+- **Progressive Unlocking**: Features unlock as players progress
 - **Modern UI**: Glass morphism effects and smooth animations
 
 ## Setup & Installation
