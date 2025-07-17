@@ -8,7 +8,7 @@ class Effects {
     addShakeCSS() {
         const shakeCSS = `
             @keyframes shake {
-                0%, 100% { transform: translate(0); }
+                0%, 100% { transform: translate(0, 0); }
                 10% { transform: translate(-2px, -1px); }
                 20% { transform: translate(2px, 1px); }
                 30% { transform: translate(-1px, 2px); }
@@ -26,20 +26,56 @@ class Effects {
         document.head.appendChild(style);
     }
 
-    // Screen shake effect
+    // Screen shake effect - only affects non-fixed elements
     addScreenShake() {
-        const container = document.querySelector('.container');
-        container.style.animation = 'none';
-        container.style.transform = 'translate(0)';
+        // Instead of shaking the entire container, shake specific elements that aren't critical UI
+        const shakableElements = document.querySelectorAll('#floatingContainer, .game-hub:not(.greeting-card)');
         
-        setTimeout(() => {
-            container.style.animation = 'shake 0.5s ease-in-out';
-        }, 10);
+        shakableElements.forEach(element => {
+            if (!element) return;
+            
+            // Force remove any existing animation
+            element.style.animation = 'none';
+            element.style.transform = 'translate(0, 0)';
+            
+            // Force a reflow to ensure the reset takes effect
+            element.offsetHeight;
+            
+            setTimeout(() => {
+                element.style.animation = 'shake 0.3s ease-in-out';
+            }, 10);
+            
+            setTimeout(() => {
+                element.style.animation = 'none';
+                element.style.transform = 'translate(0, 0)';
+                // Force another reflow to ensure the reset takes effect
+                element.offsetHeight;
+                
+                // Additional safety: remove any transform that might be lingering
+                setTimeout(() => {
+                    element.style.removeProperty('transform');
+                    element.style.removeProperty('animation');
+                }, 50);
+            }, 300);
+        });
         
-        setTimeout(() => {
-            container.style.animation = 'none';
-            container.style.transform = 'translate(0)';
-        }, 500);
+        // If no specific elements found, create a subtle background shake effect
+        if (shakableElements.length === 0) {
+            const body = document.body;
+            body.style.animation = 'none';
+            body.style.transform = 'translate(0, 0)';
+            
+            setTimeout(() => {
+                body.style.animation = 'shake 0.2s ease-in-out';
+            }, 10);
+            
+            setTimeout(() => {
+                body.style.animation = 'none';
+                body.style.transform = 'translate(0, 0)';
+                body.style.removeProperty('transform');
+                body.style.removeProperty('animation');
+            }, 200);
+        }
     }
 
     // Purchase effect

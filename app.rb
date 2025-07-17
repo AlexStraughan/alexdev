@@ -36,7 +36,8 @@ get '/api/generators' do
       baseCost: 15,
       baseProduction: 1,
       description: "A fresh coder learning the ropes",
-      icon: "👨‍💻"
+      icon: "👨‍💻",
+      unlockCondition: { type: "always" } # Always available
     },
     { 
       id: "senior_dev",
@@ -44,7 +45,8 @@ get '/api/generators' do
       baseCost: 100,
       baseProduction: 3,
       description: "Experienced programmer with deep knowledge",
-      icon: "🧙‍♂️"
+      icon: "🧙‍♂️",
+      unlockCondition: { type: "always" } # Always available
     },
     { 
       id: "code_monkey",
@@ -52,7 +54,8 @@ get '/api/generators' do
       baseCost: 1100,
       baseProduction: 8,
       description: "Automated coding assistant",
-      icon: "🐵"
+      icon: "🐵",
+      unlockCondition: { type: "always" } # Always available
     },
     { 
       id: "ai_assistant",
@@ -60,7 +63,8 @@ get '/api/generators' do
       baseCost: 12000,
       baseProduction: 47,
       description: "Advanced AI that writes code automatically",
-      icon: "🤖"
+      icon: "🤖",
+      unlockCondition: { type: "always" } # Always available
     },
     { 
       id: "quantum_computer",
@@ -68,7 +72,8 @@ get '/api/generators' do
       baseCost: 130000,
       baseProduction: 260,
       description: "Quantum processing power for ultimate coding",
-      icon: "⚛️"
+      icon: "⚛️",
+      unlockCondition: { type: "generator_owned", generator: "ai_assistant", count: 1 }
     },
     { 
       id: "coding_farm",
@@ -76,7 +81,27 @@ get '/api/generators' do
       baseCost: 1400000,
       baseProduction: 1400,
       description: "Massive server farm dedicated to code generation",
-      icon: "🏭"
+      icon: "🏭",
+      unlockCondition: { type: "generator_owned", generator: "quantum_computer", count: 1 }
+    },
+    # Add more advanced generators
+    { 
+      id: "neural_network",
+      name: "Neural Network", 
+      baseCost: 20000000,
+      baseProduction: 7800,
+      description: "Self-learning neural network that evolves code",
+      icon: "🧠",
+      unlockCondition: { type: "generator_owned", generator: "coding_farm", count: 1 }
+    },
+    { 
+      id: "code_singularity",
+      name: "Code Singularity", 
+      baseCost: 330000000,
+      baseProduction: 44000,
+      description: "The ultimate coding consciousness",
+      icon: "🌌",
+      unlockCondition: { type: "generator_owned", generator: "neural_network", count: 1 }
     }
   ]
   

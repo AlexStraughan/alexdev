@@ -70,7 +70,7 @@ class UI {
         // Show milestone celebration
         window.effects.showMilestone("Development Hub Unlocked! 🏭");
         
-        // Add screen shake for emphasis
+        // Add screen shake for emphasis - now safe with improved targeting
         window.effects.addScreenShake();
     }
 

@@ -10,45 +10,72 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 870px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
     text-align: center;
     position: relative;
     z-index: 10;
 }
 
 .hero-section {
-    text-align: center;
     color: white;
     z-index: 10;
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.hero-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    min-height: 200px;
+}
+
+.hero-left {
+    flex: 1;
+    text-align: left;
+    max-width: 400px;
+}
+
+.hero-right {
+    flex: 0 0 auto;
+    min-width: 450px;
     position: relative;
 }
 
 h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .subtitle {
-    font-size: 1.3rem;
-    margin-bottom: 2rem;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
     opacity: 0.9;
 }
 
 .greeting-card {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
-    border-radius: 20px;
+    border-radius: 15px;
     padding: 2rem;
-    margin: 2rem auto;
-    max-width: 600px;
+    margin: 0 auto;
+    width: 420px;
+    min-height: 120px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
     cursor: pointer;
     user-select: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: fixed;
+    top: 20px;
+    z-index: 1000;
 }
 
 .greeting-card:hover {
@@ -62,29 +89,29 @@ h1 {
 }
 
 #greetingText {
-    font-size: 1.4rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    margin-bottom: 0.8rem;
 }
 
 #pointsDisplay {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    margin-top: 1rem;
+    margin-top: 0.8rem;
     color: #4facfe;
     text-shadow: 0 0 10px rgba(79, 172, 254, 0.5);
 }
 
 #cpsDisplay {
-    font-size: 1.2rem;
-    margin-top: 0.5rem;
+    font-size: 1rem;
+    margin-top: 0.3rem;
     color: #00f2fe;
     display: none;
 }
 
 #clickHint {
-    font-size: 1rem;
-    margin-top: 1rem;
+    font-size: 0.9rem;
+    margin-top: 0.8rem;
     opacity: 0.8;
     color: #ffffff;
 }
@@ -126,10 +153,16 @@ h1 {
     pointer-events: auto !important;
 }
 
+.floating-element.interactive-element {
+    z-index: 1001 !important;
+    pointer-events: auto !important;
+    transition: transform 0.2s ease-out, filter 0.3s ease;
+}
+
 /* Game Hub Styles */
 .game-hub-section {
     display: none;
-    margin-top: 3rem;
+    margin-top: 1rem;
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.5s ease-out;
@@ -143,53 +176,77 @@ h1 {
 .game-hub {
     background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(15px);
-    border-radius: 20px;
-    padding: 2rem;
-    margin: 2rem auto;
+    border-radius: 15px;
+    padding: 0;
+    margin: 0 auto;
     max-width: 1000px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     position: relative;
     z-index: 10; /* Ensure UI is above floating elements */
+    overflow: hidden; /* Ensure content doesn't extend outside */
 }
 
 .status-bar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
     text-align: center;
 }
 
 .status-item {
     background: rgba(255, 255, 255, 0.1);
-    padding: 1rem;
-    border-radius: 10px;
+    padding: 0.6rem;
+    border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .status-label {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     opacity: 0.8;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
 }
 
 .status-value {
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     font-weight: bold;
     color: #4facfe;
 }
 
+/* Game Hub Titles */
+.game-hub h2 {
+    margin: 1.5rem 1.5rem 1rem 1.5rem;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.tab-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+}
+
+.tab-content p {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
 /* Tab System */
 .tab-container {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
 }
 
 .tab-buttons {
     display: flex;
     justify-content: center;
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 .tab-button {
@@ -227,15 +284,18 @@ h1 {
 /* Skills Grid */
 .skills-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .skill-card {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 1.5rem;
+    border-radius: 12px;
+    padding: 1rem;
     border: 2px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
     cursor: pointer;
@@ -372,6 +432,26 @@ h1 {
         padding: 1rem;
     }
     
+    .hero-layout {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+        min-height: auto;
+    }
+    
+    .hero-left {
+        text-align: center;
+    }
+    
+    .hero-right {
+        position: static;
+        min-width: auto;
+        width: 100%;
+        max-width: 350px;
+        margin: 0 auto;
+        visibility: visible; /* Show on mobile */
+    }
+    
     h1 {
         font-size: 2rem;
     }
@@ -381,8 +461,15 @@ h1 {
     }
     
     .greeting-card {
+        position: static;
+        min-width: auto;
+        width: 100%;
+        max-width: 320px;
         padding: 1.5rem;
         margin: 1rem auto;
+        min-height: 100px;
+        top: auto;
+        right: auto;
     }
     
     .skills-grid {

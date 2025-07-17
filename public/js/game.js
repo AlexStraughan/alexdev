@@ -16,12 +16,14 @@ class Game {
             clicksPerSecond: 0,
             lastClickTime: Date.now(),
             recentClicks: [],
-            gameHubRevealed: false
+            gameHubRevealed: false,
+            // Progressive unlock system
+            upgradesTabUnlocked: false
         };
 
         this.generatorData = [];
         this.upgradeData = [
-            // Click upgrades
+            // Click upgrades - show immediately when upgrades tab is unlocked
             {
                 id: "double_click",
                 name: "Better Mouse",
@@ -30,7 +32,8 @@ class Game {
                 effect: "clickMultiplier",
                 value: 2,
                 icon: "🖱️",
-                category: "click"
+                category: "click",
+                unlockCondition: { type: "always" }
             },
             {
                 id: "super_click",
@@ -40,7 +43,8 @@ class Game {
                 effect: "clickMultiplier",
                 value: 5,
                 icon: "⌨️",
-                category: "click"
+                category: "click",
+                unlockCondition: { type: "upgrade_owned", upgrade: "double_click" }
             },
             {
                 id: "crit_chance_1",
@@ -50,7 +54,8 @@ class Game {
                 effect: "critChance",
                 value: 5,
                 icon: "🍀",
-                category: "click"
+                category: "click",
+                unlockCondition: { type: "always" }
             },
             {
                 id: "crit_chance_2",
@@ -60,7 +65,8 @@ class Game {
                 effect: "critChance",
                 value: 10,
                 icon: "⏰",
-                category: "click"
+                category: "click",
+                unlockCondition: { type: "upgrade_owned", upgrade: "crit_chance_1" }
             },
             {
                 id: "crit_multiplier_1",
@@ -70,9 +76,10 @@ class Game {
                 effect: "critMultiplier",
                 value: 3,
                 icon: "💥",
-                category: "click"
+                category: "click",
+                unlockCondition: { type: "upgrade_owned", upgrade: "crit_chance_2" }
             },
-            // Junior Developer upgrades
+            // Junior Developer upgrades - unlock when player owns a junior dev
             {
                 id: "junior_coffee",
                 name: "Coffee for Juniors",
@@ -82,7 +89,8 @@ class Game {
                 value: 2,
                 icon: "☕",
                 category: "junior_dev",
-                targetGenerator: "junior_dev"
+                targetGenerator: "junior_dev",
+                unlockCondition: { type: "generator_owned", generator: "junior_dev", count: 1 }
             },
             {
                 id: "junior_documentation",
@@ -93,7 +101,8 @@ class Game {
                 value: 1.5,
                 icon: "📚",
                 category: "junior_dev",
-                targetGenerator: "junior_dev"
+                targetGenerator: "junior_dev",
+                unlockCondition: { type: "generator_owned", generator: "junior_dev", count: 5 }
             },
             {
                 id: "junior_mentorship",
@@ -104,7 +113,8 @@ class Game {
                 value: 3,
                 icon: "🎓",
                 category: "junior_dev",
-                targetGenerator: "junior_dev"
+                targetGenerator: "junior_dev",
+                unlockCondition: { type: "upgrade_owned", upgrade: "junior_documentation" }
             },
             {
                 id: "junior_automation",
@@ -115,7 +125,8 @@ class Game {
                 value: 2,
                 icon: "🤖",
                 category: "junior_dev",
-                targetGenerator: "junior_dev"
+                targetGenerator: "junior_dev",
+                unlockCondition: { type: "upgrade_owned", upgrade: "junior_mentorship" }
             },
             {
                 id: "junior_ai_assist",
@@ -126,7 +137,8 @@ class Game {
                 value: 5,
                 icon: "🧠",
                 category: "junior_dev",
-                targetGenerator: "junior_dev"
+                targetGenerator: "junior_dev",
+                unlockCondition: { type: "upgrade_owned", upgrade: "junior_automation" }
             },
             // Senior Developer upgrades
             {
@@ -138,7 +150,8 @@ class Game {
                 value: 2,
                 icon: "💻",
                 category: "senior_dev",
-                targetGenerator: "senior_dev"
+                targetGenerator: "senior_dev",
+                unlockCondition: { type: "generator_owned", generator: "senior_dev", count: 1 }
             },
             {
                 id: "senior_architecture",
@@ -149,7 +162,8 @@ class Game {
                 value: 1.5,
                 icon: "🏗️",
                 category: "senior_dev",
-                targetGenerator: "senior_dev"
+                targetGenerator: "senior_dev",
+                unlockCondition: { type: "generator_owned", generator: "senior_dev", count: 5 }
             },
             {
                 id: "senior_refactoring",
@@ -160,7 +174,8 @@ class Game {
                 value: 3,
                 icon: "🔧",
                 category: "senior_dev",
-                targetGenerator: "senior_dev"
+                targetGenerator: "senior_dev",
+                unlockCondition: { type: "upgrade_owned", upgrade: "senior_architecture" }
             },
             {
                 id: "senior_leadership",
@@ -171,7 +186,8 @@ class Game {
                 value: 2,
                 icon: "👑",
                 category: "senior_dev",
-                targetGenerator: "senior_dev"
+                targetGenerator: "senior_dev",
+                unlockCondition: { type: "upgrade_owned", upgrade: "senior_refactoring" }
             },
             {
                 id: "senior_innovation",
@@ -182,7 +198,8 @@ class Game {
                 value: 5,
                 icon: "💡",
                 category: "senior_dev",
-                targetGenerator: "senior_dev"
+                targetGenerator: "senior_dev",
+                unlockCondition: { type: "upgrade_owned", upgrade: "senior_leadership" }
             },
             // Code Monkey upgrades
             {
@@ -194,7 +211,8 @@ class Game {
                 value: 2,
                 icon: "🍌",
                 category: "code_monkey",
-                targetGenerator: "code_monkey"
+                targetGenerator: "code_monkey",
+                unlockCondition: { type: "generator_owned", generator: "code_monkey", count: 1 }
             },
             {
                 id: "monkey_playground",
@@ -205,7 +223,8 @@ class Game {
                 value: 1.5,
                 icon: "🎪",
                 category: "code_monkey",
-                targetGenerator: "code_monkey"
+                targetGenerator: "code_monkey",
+                unlockCondition: { type: "generator_owned", generator: "code_monkey", count: 5 }
             },
             {
                 id: "monkey_typewriter",
@@ -216,7 +235,8 @@ class Game {
                 value: 3,
                 icon: "⌨️",
                 category: "code_monkey",
-                targetGenerator: "code_monkey"
+                targetGenerator: "code_monkey",
+                unlockCondition: { type: "upgrade_owned", upgrade: "monkey_playground" }
             },
             {
                 id: "monkey_evolution",
@@ -227,7 +247,8 @@ class Game {
                 value: 2,
                 icon: "🧬",
                 category: "code_monkey",
-                targetGenerator: "code_monkey"
+                targetGenerator: "code_monkey",
+                unlockCondition: { type: "upgrade_owned", upgrade: "monkey_typewriter" }
             },
             {
                 id: "monkey_shakespeare",
@@ -238,7 +259,58 @@ class Game {
                 value: 5,
                 icon: "🎭",
                 category: "code_monkey",
-                targetGenerator: "code_monkey"
+                targetGenerator: "code_monkey",
+                unlockCondition: { type: "upgrade_owned", upgrade: "monkey_evolution" }
+            },
+            // AI Assistant upgrades
+            {
+                id: "ai_optimization",
+                name: "Code Optimization",
+                description: "AI Assistants work 2x faster",
+                cost: 120000,
+                effect: "generatorMultiplier",
+                value: 2,
+                icon: "⚡",
+                category: "ai_assistant",
+                targetGenerator: "ai_assistant",
+                unlockCondition: { type: "generator_owned", generator: "ai_assistant", count: 1 }
+            },
+            {
+                id: "ai_learning",
+                name: "Machine Learning",
+                description: "AI Assistants work 50% faster",
+                cost: 600000,
+                effect: "generatorMultiplier",
+                value: 1.5,
+                icon: "🎯",
+                category: "ai_assistant",
+                targetGenerator: "ai_assistant",
+                unlockCondition: { type: "generator_owned", generator: "ai_assistant", count: 5 }
+            },
+            // Quantum Computer upgrades
+            {
+                id: "quantum_entanglement",
+                name: "Quantum Entanglement",
+                description: "Quantum Computers work 2x faster",
+                cost: 1300000,
+                effect: "generatorMultiplier",
+                value: 2,
+                icon: "🌌",
+                category: "quantum_computer",
+                targetGenerator: "quantum_computer",
+                unlockCondition: { type: "generator_owned", generator: "quantum_computer", count: 1 }
+            },
+            {
+                id: "quantum_supremacy",
+                name: "Quantum Supremacy",
+                description: "Quantum Computers work 50% faster",
+                cost: 6500000,
+                effect: "generatorMultiplier",
+                value: 1.5,
+                icon: "👑",
+                category: "quantum_computer",
+                targetGenerator: "quantum_computer",
+                unlockCondition: { type: "generator_owned", generator: "quantum_computer", count: 5 }
             }
         ];
 
@@ -304,6 +376,12 @@ class Game {
             console.log('New player - game hub will be hidden until 15 clicks');
         }
         
+        // Initialize progressive unlock system
+        if (!this.state.upgradesTabUnlocked) {
+            this.hideUpgradesTab();
+        }
+        this.checkProgressiveUnlocks();
+        
         this.startGameLoop();
     }
 
@@ -335,6 +413,70 @@ class Game {
             window.switchTab('generators');
         } catch (error) {
             console.error('Error loading generators:', error);
+        }
+    }
+
+    // Progressive unlock system
+    checkUnlockCondition(unlockCondition) {
+        if (!unlockCondition) return true;
+        
+        switch (unlockCondition.type) {
+            case "always":
+                return true;
+            case "generator_owned":
+                const ownedCount = this.state.generators[unlockCondition.generator] || 0;
+                return ownedCount >= (unlockCondition.count || 1);
+            case "upgrade_owned":
+                return this.state.upgrades[unlockCondition.upgrade] || false;
+            case "points":
+                return this.state.points >= unlockCondition.amount;
+            case "total_points":
+                return this.state.totalPointsEarned >= unlockCondition.amount;
+            default:
+                return false;
+        }
+    }
+
+    getUnlockedGenerators() {
+        return this.generatorData.filter(generator => 
+            this.checkUnlockCondition(generator.unlockCondition)
+        );
+    }
+
+    getUnlockedUpgrades() {
+        return this.upgradeData.filter(upgrade => 
+            this.checkUnlockCondition(upgrade.unlockCondition)
+        );
+    }
+
+    checkProgressiveUnlocks() {
+        // Check if upgrades tab should be unlocked
+        const hasAnyGenerator = Object.values(this.state.generators).some(count => count > 0);
+        if (hasAnyGenerator && !this.state.upgradesTabUnlocked) {
+            this.state.upgradesTabUnlocked = true;
+            this.showUpgradesTab();
+        }
+
+        // Re-render generators and upgrades to show newly unlocked items
+        this.renderGenerators();
+        this.renderUpgrades();
+    }
+
+    showUpgradesTab() {
+        const upgradesTabButton = document.querySelector('.tab-button[onclick="switchTab(\'upgrades\')"]');
+        if (upgradesTabButton) {
+            upgradesTabButton.style.display = 'block';
+            
+            // Add visual feedback for unlock
+            window.ui.createFloatingNumber('Upgrades Unlocked!', '#4facfe');
+            console.log('Upgrades tab unlocked!');
+        }
+    }
+
+    hideUpgradesTab() {
+        const upgradesTabButton = document.querySelector('.tab-button[onclick="switchTab(\'upgrades\')"]');
+        if (upgradesTabButton) {
+            upgradesTabButton.style.display = 'none';
         }
     }
 
@@ -484,8 +626,10 @@ class Game {
             
             this.calculatePointsPerSecond();
             this.updateDisplay();
-            this.renderGenerators();
-            this.renderUpgrades();
+            
+            // Check for progressive unlocks after purchase
+            this.checkProgressiveUnlocks();
+            
             this.saveGameState();
             
             // Add visual feedback
@@ -513,8 +657,10 @@ class Game {
             
             this.calculatePointsPerSecond();
             this.updateDisplay();
-            this.renderUpgrades();
-            this.renderGenerators();
+            
+            // Check for progressive unlocks after purchase
+            this.checkProgressiveUnlocks();
+            
             this.saveGameState();
             
             window.ui.createFloatingNumber(`+${upgrade.name}!`, '#ff6b6b');
@@ -546,7 +692,7 @@ class Game {
     // Handle click
     async handleClick() {
         try {
-            console.log('Click detected! Total clicks before:', this.state.totalClicks);
+            // console.log('Click detected! Total clicks before:', this.state.totalClicks);
             
             // Track click timing
             const now = Date.now();
@@ -567,7 +713,7 @@ class Game {
             this.state.totalClicks++;
             this.state.totalPointsEarned += clickDamage;
             
-            console.log('Click processed! Total clicks now:', this.state.totalClicks, 'Points:', this.state.points);
+            // console.log('Click processed! Total clicks now:', this.state.totalClicks, 'Points:', this.state.points);
             
             // Show floating number with crit styling
             if (isCrit) {
@@ -600,24 +746,14 @@ class Game {
 
     // Check if game hub should be revealed
     checkGameHubReveal() {
+        if (this.state.gameHubRevealed) return; // Only process once
         const hasGenerators = Object.values(this.state.generators).some(count => count > 0);
         const hasSignificantPoints = this.state.points >= 16; // 16+ points
         const hasEnoughClicks = this.state.totalClicks >= 15; // 15+ clicks
         const hasEarnedPoints = this.state.totalPointsEarned >= 16; // Has earned 16+ points total
-        
-        console.log('Checking game hub reveal:', {
-            hasGenerators,
-            hasSignificantPoints,
-            hasEnoughClicks,
-            hasEarnedPoints,
-            totalClicks: this.state.totalClicks,
-            points: this.state.points,
-            totalPointsEarned: this.state.totalPointsEarned,
-            gameHubRevealed: this.state.gameHubRevealed
-        });
-        
-        // Reveal if: has 15+ clicks OR 16+ points OR any generators OR has earned 16+ points total
-        if ((hasEnoughClicks || hasSignificantPoints || hasGenerators || hasEarnedPoints) && !this.state.gameHubRevealed) {
+
+        // Only log once if revealing
+        if (hasEnoughClicks || hasSignificantPoints || hasGenerators || hasEarnedPoints) {
             this.state.gameHubRevealed = true;
             window.ui.revealGameHub();
             this.saveGameState();
@@ -727,19 +863,23 @@ class Game {
         
         // Update upgrade cards
         const upgradeCards = document.querySelectorAll('#upgradesGrid .skill-card');
-        upgradeCards.forEach((card, index) => {
-            const visibleUpgrades = this.upgradeData.filter(upgrade => !this.state.upgrades[upgrade.id]);
-            if (visibleUpgrades[index]) {
-                const upgrade = visibleUpgrades[index];
-                const affordable = this.state.points >= upgrade.cost;
+        upgradeCards.forEach((card) => {
+            const upgradeId = card.getAttribute('data-upgrade-id');
+            
+            if (upgradeId) {
+                const upgrade = this.upgradeData.find(u => u.id === upgradeId);
                 
-                // Update affordability class
-                if (affordable && !card.classList.contains('affordable')) {
-                    card.classList.add('affordable');
-                    card.classList.remove('locked');
-                } else if (!affordable && !card.classList.contains('locked')) {
-                    card.classList.remove('affordable');
-                    card.classList.add('locked');
+                if (upgrade) {
+                    const affordable = this.state.points >= upgrade.cost;
+                    
+                    // Update affordability class
+                    if (affordable && !card.classList.contains('affordable')) {
+                        card.classList.add('affordable');
+                        card.classList.remove('locked');
+                    } else if (!affordable && !card.classList.contains('locked')) {
+                        card.classList.remove('affordable');
+                        card.classList.add('locked');
+                    }
                 }
             }
         });
@@ -750,7 +890,10 @@ class Game {
         const skillsGrid = document.getElementById('skillsGrid');
         skillsGrid.innerHTML = '';
         
-        this.generatorData.forEach((generator, index) => {
+        // Only show unlocked generators
+        const unlockedGenerators = this.getUnlockedGenerators();
+        
+        unlockedGenerators.forEach((generator, index) => {
             const owned = this.state.generators[generator.id] || 0;
             const cost = this.getGeneratorCost(generator);
             const affordable = this.state.points >= cost;
@@ -790,17 +933,22 @@ class Game {
         });
     }
 
-    // Render upgrades
+        // Render upgrades
     renderUpgrades() {
         const upgradesContainer = document.getElementById('upgradesGrid');
         upgradesContainer.innerHTML = '';
         
+        // Only show unlocked upgrades that haven't been purchased
+        const unlockedUpgrades = this.getUnlockedUpgrades().filter(upgrade => 
+            !this.state.upgrades[upgrade.id]
+        );
+        
         // Group upgrades by category
-        const categories = ['click', 'junior_dev', 'senior_dev', 'code_monkey'];
+        const categories = ['click', 'junior_dev', 'senior_dev', 'code_monkey', 'ai_assistant', 'quantum_computer'];
         
         categories.forEach(category => {
-            const categoryUpgrades = this.upgradeData.filter(upgrade => 
-                upgrade.category === category && !this.state.upgrades[upgrade.id]
+            const categoryUpgrades = unlockedUpgrades.filter(upgrade => 
+                upgrade.category === category
             );
             
             if (categoryUpgrades.length > 0) {
@@ -819,7 +967,9 @@ class Game {
                     'click': '🖱️ Click Upgrades',
                     'junior_dev': '👨‍💻 Junior Developer Upgrades',
                     'senior_dev': '👨‍💼 Senior Developer Upgrades',
-                    'code_monkey': '🐵 Code Monkey Upgrades'
+                    'code_monkey': '🐵 Code Monkey Upgrades',
+                    'ai_assistant': '🤖 AI Assistant Upgrades',
+                    'quantum_computer': '⚛️ Quantum Computer Upgrades'
                 };
                 categoryHeader.textContent = categoryNames[category];
                 upgradesContainer.appendChild(categoryHeader);
@@ -829,6 +979,7 @@ class Game {
                     const affordable = this.state.points >= upgrade.cost;
                     const upgradeCard = document.createElement('div');
                     upgradeCard.className = `skill-card ${affordable ? 'affordable' : 'locked'}`;
+                    upgradeCard.setAttribute('data-upgrade-id', upgrade.id);
                     
                     upgradeCard.addEventListener('mousedown', (e) => {
                         e.preventDefault();

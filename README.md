@@ -1,6 +1,6 @@
 # Alex Straughan - Developer Portfolio
 
-A Ruby Sinatra-based portfolio website featuring an interactive physics simulation and cookie clicker-style game.
+A Ruby Sinatra-based portfolio website featuring an interactive physics simulation and idle game.
 
 ## Project Structure
 

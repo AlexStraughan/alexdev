@@ -8,22 +8,30 @@
 </head>
 <body>
     <!-- Debug reset button -->
-    <button id="debugReset" style="position: fixed; top: 10px; left: 10px; z-index: 9999; background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px;">Reset Progress</button>
+    <%# <button id="debugReset" style="position: fixed; top: 10px; left: 10px; z-index: 9999; background: #ff4444; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 12px;">Reset Progress</button> %>
     
     <!-- Floating elements container for physics simulation -->
     <div id="floatingContainer"></div>
     
     <div class="container">
         <div class="hero-section">
-            <h1>Alex Straughan</h1>
-            <p class="subtitle">Full Stack Developer & Code Enthusiast</p>
-            
-            <!-- Main clicker card -->
-            <div class="greeting-card" id="greetingCard">
-                <div id="greetingText">Click me to start coding!</div>
-                <div id="pointsDisplay">Code Points: 0</div>
-                <div id="cpsDisplay">Points per second: 0</div>
-                <div id="clickHint">Click to earn your first code points!</div>
+            <div class="hero-layout">
+                <!-- Left side: Name and summary -->
+                <div class="hero-left">
+                    <h1>Alex Straughan</h1>
+                    <p class="subtitle">Full Stack Developer & Code Enthusiast</p>
+                    <p class="subtitle" style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Hold Background for Clickable Link Icons</p>
+                </div>
+                
+                <!-- Right side: Clicker button -->
+                <div class="hero-right">
+                    <div class="greeting-card" id="greetingCard">
+                        <div id="greetingText">Click me to start coding!</div>
+                        <div id="pointsDisplay">Code Points: 0</div>
+                        <div id="cpsDisplay">Points per second: 0</div>
+                        <div id="clickHint">Click to earn your first code points!</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -86,7 +94,10 @@
     </div>
 
     <!-- Include JavaScript modules -->
-    <script src="/js/physics.js"></script>
+    <script src="/js/floating-elements.js"></script>
+    <script src="/js/interactive-elements.js"></script>
+    <script src="/js/physics-manager.js"></script>
+    <script src="/js/leaderboard.js"></script>
     <script src="/js/effects.js"></script>
     <script src="/js/ui.js"></script>
     <script src="/js/game.js"></script>
