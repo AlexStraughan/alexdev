@@ -137,6 +137,10 @@
             animation: fadeInUp 1s ease-out 0.9s both;
         }
 
+        .skills-section.revealed {
+            animation: slideInFromBottom 0.8s ease-out both;
+        }
+
         .skills-title {
             font-size: 2rem;
             margin-bottom: 1.5rem;
@@ -347,6 +351,16 @@
             color: rgba(255,255,255,0.15);
         }
 
+        .linkedin-element {
+            color: rgba(0, 119, 181, 0.8) !important; /* LinkedIn blue */
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 119, 181, 0.6);
+        }
+
+        .linkedin-element:hover {
+            color: rgba(0, 119, 181, 1) !important;
+        }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -417,13 +431,13 @@
             <p class="subtitle">Software Developer & Digital Craftsman</p>
             
             <div class="interactive-greeting" id="greetingCard">
-                <div class="greeting-text" id="greetingText">Click me to earn Code Points! �</div>
-                <div class="click-hint">Start your coding empire...</div>
+                <div class="greeting-text" id="greetingText">Click me to earn Code Points! 👀</div>
+                <div class="click-hint" id="clickHint">Start your coding journey...</div>
                 <div class="points-display" id="pointsDisplay">Code Points: 0</div>
-                <div class="cps-display" id="cpsDisplay">Points per second: 0</div>
+                <div class="cps-display" id="cpsDisplay" style="display: none;">Points per second: 0</div>
             </div>
 
-            <div class="skills-section">
+            <div class="skills-section" id="gameHubSection" style="display: none;">
                 <h2 class="skills-title">Development Hub</h2>
                 
                 <!-- Status Display -->
@@ -433,16 +447,16 @@
                         <div class="status-value" id="clickPowerDisplay">1</div>
                     </div>
                     <div class="status-card">
+                        <div class="status-title">🎯 Crit Chance</div>
+                        <div class="status-value" id="critChanceDisplay">0%</div>
+                    </div>
+                    <div class="status-card">
                         <div class="status-title">🖱️ Click Rate</div>
                         <div class="status-value" id="clickRateDisplay">0.0/s</div>
                     </div>
                     <div class="status-card">
-                        <div class="status-title">⚡ Generator Multiplier</div>
+                        <div class="status-title">⚡ Avg Generator Multiplier</div>
                         <div class="status-value" id="generatorMultiplierDisplay">1x</div>
-                    </div>
-                    <div class="status-card">
-                        <div class="status-title">📈 Total CPS</div>
-                        <div class="status-value" id="totalCpsDisplay">0</div>
                     </div>
                 </div>
                 
@@ -600,8 +614,126 @@
             }
         }
         
+        // Special LinkedIn floating element
+        class LinkedInElement extends FloatingElement {
+            constructor(x, y) {
+                super('🔗', x, y, 'medium'); // Use link emoji, will replace with LinkedIn styling
+                this.isLinkedIn = true;
+                this.maxSpeed = 1.5; // Much slower movement
+                this.mass = 10; // Heavy so it affects others more
+                this.radius = 30; // Larger radius for more influence
+                this.angle = Math.random() * Math.PI * 2; // For smooth circular-ish movement
+                this.speedMultiplier = 0.3; // Very slow movement
+                
+                // Override the createElement to add LinkedIn styling and click handler
+                this.createLinkedInElement();
+            }
+            
+            createLinkedInElement() {
+                // Remove the default element first
+                if (this.element && this.element.parentNode) {
+                    this.element.parentNode.removeChild(this.element);
+                }
+                
+                this.element = document.createElement('div');
+                this.element.className = 'floating-element linkedin-element medium';
+                this.element.innerHTML = '<span style="font-family: Arial, sans-serif; font-weight: bold; color: white; background: #0077B5; padding: 0.2em 0.3em; border-radius: 0.1em; font-size: 0.8em;">in</span>'; // LinkedIn "in" logo
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+                this.element.style.position = 'absolute';
+                this.element.style.cursor = 'pointer';
+                this.element.style.pointerEvents = 'auto'; // Enable clicking
+                this.element.style.fontSize = '2.5rem';
+                this.element.style.filter = 'drop-shadow(0 0 10px rgba(0, 119, 181, 0.6))'; // LinkedIn blue glow
+                this.element.style.transition = 'transform 0.1s ease-out, filter 0.3s ease';
+                this.element.style.zIndex = '5'; // Above other floating elements
+                
+                // Add hover effect
+                this.element.addEventListener('mouseenter', () => {
+                    this.element.style.transform = 'scale(1.2)';
+                    this.element.style.filter = 'drop-shadow(0 0 15px rgba(0, 119, 181, 0.8))';
+                });
+                
+                this.element.addEventListener('mouseleave', () => {
+                    this.element.style.transform = 'scale(1)';
+                    this.element.style.filter = 'drop-shadow(0 0 10px rgba(0, 119, 181, 0.6))';
+                });
+                
+                // Add click handler to open LinkedIn
+                this.element.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    window.open('https://www.linkedin.com/in/alexstraughan/', '_blank');
+                    
+                    // Add a special effect when clicked
+                    this.element.style.transform = 'scale(1.5)';
+                    this.element.style.filter = 'drop-shadow(0 0 20px rgba(0, 119, 181, 1))';
+                    
+                    setTimeout(() => {
+                        this.element.style.transform = 'scale(1)';
+                        this.element.style.filter = 'drop-shadow(0 0 10px rgba(0, 119, 181, 0.6))';
+                    }, 200);
+                });
+                
+                document.getElementById('floatingContainer').appendChild(this.element);
+            }
+            
+            update(mouseX, mouseY, otherElements) {
+                // Move in a slow, smooth pattern (not affected by mouse or other elements)
+                this.angle += 0.002; // Very slow rotation
+                this.vx = Math.cos(this.angle) * this.speedMultiplier;
+                this.vy = Math.sin(this.angle) * this.speedMultiplier;
+                
+                // Apply movement
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Boundary bouncing - just reverse direction smoothly
+                const margin = this.radius;
+                if (this.x < margin || this.x > window.innerWidth - margin) {
+                    this.angle = Math.PI - this.angle; // Reflect angle
+                    this.x = Math.max(margin, Math.min(window.innerWidth - margin, this.x));
+                }
+                if (this.y < margin || this.y > window.innerHeight - margin) {
+                    this.angle = -this.angle; // Reflect angle
+                    this.y = Math.max(margin, Math.min(window.innerHeight - margin, this.y));
+                }
+                
+                // Affect other elements (push them away) but don't be affected by them
+                otherElements.forEach(other => {
+                    if (other !== this && !other.isLinkedIn) {
+                        const dx = other.x - this.x;
+                        const dy = other.y - this.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const influenceDistance = this.radius + 50; // Larger influence area
+                        
+                        if (distance < influenceDistance && distance > 0) {
+                            // Push other element away
+                            const pushForce = (influenceDistance - distance) / influenceDistance * 0.5;
+                            const pushX = (dx / distance) * pushForce;
+                            const pushY = (dy / distance) * pushForce;
+                            
+                            other.vx += pushX;
+                            other.vy += pushY;
+                            
+                            // Slightly move other element away to prevent overlap
+                            if (distance < this.radius + other.radius) {
+                                const separationForce = (this.radius + other.radius - distance) * 0.1;
+                                other.x += (dx / distance) * separationForce;
+                                other.y += (dy / distance) * separationForce;
+                            }
+                        }
+                    }
+                });
+                
+                // Update element position
+                this.element.style.left = this.x + 'px';
+                this.element.style.top = this.y + 'px';
+            }
+        }
+        
         // Create floating elements
         const floatingElements = [];
+        let linkedinElement = null; // Special LinkedIn element
         const emojis = [
             '💻', '🚀', '⚡', '🎯', '✨', '🔧', '💡', '🎨', '📱', '⚙️',
             '🖥️', '📊', '🌟', '💎', '🔮', '🎪', '🎭', '🎨', '🎯',
@@ -617,6 +749,12 @@
             // Get actual viewport dimensions
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
+            
+            // Create the special LinkedIn element first
+            const linkedinX = viewportWidth * 0.2 + Math.random() * viewportWidth * 0.6; // Somewhere in middle area
+            const linkedinY = viewportHeight * 0.2 + Math.random() * viewportHeight * 0.6;
+            linkedinElement = new LinkedInElement(linkedinX, linkedinY);
+            floatingElements.push(linkedinElement);
             
             for (let i = 0; i < numElements; i++) {
                 const emoji = emojis[Math.floor(Math.random() * emojis.length)];
@@ -661,6 +799,44 @@
                 element.update(mouseX, mouseY, floatingElements);
             });
             requestAnimationFrame(animate);
+        }
+
+        // Check if game hub should be revealed
+        function checkGameHubReveal() {
+            // Check multiple conditions for revealing the game hub
+            const hasGenerators = Object.values(gameState.generators).some(count => count > 0);
+            const hasSignificantPoints = gameState.points >= 15;
+            const hasEnoughClicks = gameState.totalClicks >= 15;
+            
+            if ((hasEnoughClicks || hasGenerators || hasSignificantPoints) && !gameState.gameHubRevealed) {
+                gameState.gameHubRevealed = true;
+                revealGameHub();
+                saveGameState();
+            }
+        }
+
+        // Reveal the game hub with animation
+        function revealGameHub() {
+            const gameHubSection = document.getElementById('gameHubSection');
+            const cpsDisplay = document.getElementById('cpsDisplay');
+            const clickHint = document.getElementById('clickHint');
+            
+            // Update the hint text
+            clickHint.textContent = "Welcome to your coding empire!";
+            
+            // Show CPS display
+            cpsDisplay.style.display = 'block';
+            cpsDisplay.style.animation = 'fadeInUp 0.5s ease-out';
+            
+            // Show game hub with animation
+            gameHubSection.style.display = 'block';
+            gameHubSection.classList.add('revealed');
+            
+            // Show milestone celebration
+            showMilestone("Development Hub Unlocked! 🏭");
+            
+            // Add screen shake for emphasis
+            addScreenShake();
         }
 
         // Achievement system
@@ -874,19 +1050,24 @@
         let gameState = {
             points: 0,
             pointsPerSecond: 0,
+            generatorPointsPerSecond: 0,
             generators: {},
             clickPower: 1,
+            critChance: 0, // 0-100% chance for critical clicks
+            critMultiplier: 2, // How much extra damage crits do
             totalClicks: 0,
             totalPointsEarned: 0,
             achievements: [],
             upgrades: {},
             clicksPerSecond: 0,
             lastClickTime: Date.now(),
-            recentClicks: []
+            recentClicks: [],
+            gameHubRevealed: false
         };
 
         let generatorData = [];
         let upgradeData = [
+            // Click upgrades
             {
                 id: "double_click",
                 name: "Better Mouse",
@@ -894,7 +1075,8 @@
                 cost: 100,
                 effect: "clickMultiplier",
                 value: 2,
-                icon: "🖱️"
+                icon: "🖱️",
+                category: "click"
             },
             {
                 id: "super_click",
@@ -903,43 +1085,207 @@
                 cost: 1000,
                 effect: "clickMultiplier",
                 value: 5,
-                icon: "⌨️"
+                icon: "⌨️",
+                category: "click"
             },
             {
-                id: "junior_boost",
+                id: "crit_chance_1",
+                name: "Lucky Fingers",
+                description: "5% chance for critical clicks (2x damage)",
+                cost: 500,
+                effect: "critChance",
+                value: 5,
+                icon: "🍀",
+                category: "click"
+            },
+            {
+                id: "crit_chance_2",
+                name: "Perfect Timing",
+                description: "Additional 10% crit chance",
+                cost: 5000,
+                effect: "critChance",
+                value: 10,
+                icon: "⏰",
+                category: "click"
+            },
+            {
+                id: "crit_multiplier_1",
+                name: "Critical Strike",
+                description: "Critical clicks now do 3x damage instead of 2x",
+                cost: 10000,
+                effect: "critMultiplier",
+                value: 3,
+                icon: "💥",
+                category: "click"
+            },
+            // Junior Developer upgrades
+            {
+                id: "junior_coffee",
                 name: "Coffee for Juniors",
                 description: "Junior Developers work 2x faster",
-                cost: 500,
+                cost: 250,
                 effect: "generatorMultiplier",
                 value: 2,
-                icon: "☕"
+                icon: "☕",
+                category: "junior_dev",
+                targetGenerator: "junior_dev"
             },
             {
-                id: "senior_boost",
-                name: "Premium IDE",
-                description: "Senior Developers work 2x faster",
+                id: "junior_documentation",
+                name: "Better Documentation",
+                description: "Junior Developers work 50% faster",
+                cost: 1000,
+                effect: "generatorMultiplier",
+                value: 1.5,
+                icon: "📚",
+                category: "junior_dev",
+                targetGenerator: "junior_dev"
+            },
+            {
+                id: "junior_mentorship",
+                name: "Mentorship Program",
+                description: "Junior Developers work 3x faster",
                 cost: 5000,
                 effect: "generatorMultiplier",
-                value: 2,
-                icon: "💻"
+                value: 3,
+                icon: "🎓",
+                category: "junior_dev",
+                targetGenerator: "junior_dev"
             },
             {
-                id: "monkey_boost",
-                name: "Banana Supply",
-                description: "Code Monkeys work 2x faster",
+                id: "junior_automation",
+                name: "Code Templates",
+                description: "Junior Developers work 2x faster",
+                cost: 15000,
+                effect: "generatorMultiplier",
+                value: 2,
+                icon: "🤖",
+                category: "junior_dev",
+                targetGenerator: "junior_dev"
+            },
+            {
+                id: "junior_ai_assist",
+                name: "AI Code Assistant",
+                description: "Junior Developers work 5x faster",
                 cost: 50000,
                 effect: "generatorMultiplier",
-                value: 2,
-                icon: "🍌"
+                value: 5,
+                icon: "🧠",
+                category: "junior_dev",
+                targetGenerator: "junior_dev"
             },
+            // Senior Developer upgrades
             {
-                id: "ai_boost",
-                name: "Neural Network Upgrade",
-                description: "AI Assistants work 2x faster",
-                cost: 500000,
+                id: "senior_ide",
+                name: "Premium IDE",
+                description: "Senior Developers work 2x faster",
+                cost: 2500,
                 effect: "generatorMultiplier",
                 value: 2,
-                icon: "🧠"
+                icon: "💻",
+                category: "senior_dev",
+                targetGenerator: "senior_dev"
+            },
+            {
+                id: "senior_architecture",
+                name: "System Architecture",
+                description: "Senior Developers work 50% faster",
+                cost: 10000,
+                effect: "generatorMultiplier",
+                value: 1.5,
+                icon: "🏗️",
+                category: "senior_dev",
+                targetGenerator: "senior_dev"
+            },
+            {
+                id: "senior_refactoring",
+                name: "Refactoring Tools",
+                description: "Senior Developers work 3x faster",
+                cost: 50000,
+                effect: "generatorMultiplier",
+                value: 3,
+                icon: "🔧",
+                category: "senior_dev",
+                targetGenerator: "senior_dev"
+            },
+            {
+                id: "senior_leadership",
+                name: "Tech Leadership",
+                description: "Senior Developers work 2x faster",
+                cost: 150000,
+                effect: "generatorMultiplier",
+                value: 2,
+                icon: "👑",
+                category: "senior_dev",
+                targetGenerator: "senior_dev"
+            },
+            {
+                id: "senior_innovation",
+                name: "Innovation Lab",
+                description: "Senior Developers work 5x faster",
+                cost: 500000,
+                effect: "generatorMultiplier",
+                value: 5,
+                icon: "💡",
+                category: "senior_dev",
+                targetGenerator: "senior_dev"
+            },
+            // Similar upgrade patterns for other generators...
+            // Code Monkey upgrades
+            {
+                id: "monkey_bananas",
+                name: "Premium Bananas",
+                description: "Code Monkeys work 2x faster",
+                cost: 25000,
+                effect: "generatorMultiplier",
+                value: 2,
+                icon: "🍌",
+                category: "code_monkey",
+                targetGenerator: "code_monkey"
+            },
+            {
+                id: "monkey_playground",
+                name: "Coding Playground",
+                description: "Code Monkeys work 50% faster",
+                cost: 100000,
+                effect: "generatorMultiplier",
+                value: 1.5,
+                icon: "🎪",
+                category: "code_monkey",
+                targetGenerator: "code_monkey"
+            },
+            {
+                id: "monkey_typewriter",
+                name: "Infinite Typewriters",
+                description: "Code Monkeys work 3x faster",
+                cost: 500000,
+                effect: "generatorMultiplier",
+                value: 3,
+                icon: "⌨️",
+                category: "code_monkey",
+                targetGenerator: "code_monkey"
+            },
+            {
+                id: "monkey_evolution",
+                name: "Evolutionary Algorithm",
+                description: "Code Monkeys work 2x faster",
+                cost: 1500000,
+                effect: "generatorMultiplier",
+                value: 2,
+                icon: "🧬",
+                category: "code_monkey",
+                targetGenerator: "code_monkey"
+            },
+            {
+                id: "monkey_shakespeare",
+                name: "Shakespeare Protocol",
+                description: "Code Monkeys work 5x faster",
+                cost: 5000000,
+                effect: "generatorMultiplier",
+                value: 5,
+                icon: "🎭",
+                category: "code_monkey",
+                targetGenerator: "code_monkey"
             }
         ];
         let achievements = [
@@ -971,6 +1317,25 @@
             await loadGenerators();
             calculatePointsPerSecond();
             updateDisplay();
+            
+            // Check if game hub should be revealed (for returning players)
+            // This includes multiple conditions: existing revealed state, generators, points, or clicks
+            const hasGenerators = Object.values(gameState.generators).some(count => count > 0);
+            const hasSignificantPoints = gameState.points >= 15;
+            const hasEnoughClicks = gameState.totalClicks >= 15;
+            
+            if (gameState.gameHubRevealed || hasGenerators || hasSignificantPoints || hasEnoughClicks) {
+                const gameHubSection = document.getElementById('gameHubSection');
+                const cpsDisplay = document.getElementById('cpsDisplay');
+                const clickHint = document.getElementById('clickHint');
+                
+                gameState.gameHubRevealed = true;
+                clickHint.textContent = "Welcome back to your coding empire!";
+                cpsDisplay.style.display = 'block';
+                gameHubSection.style.display = 'block';
+                saveGameState();
+            }
+            
             startGameLoop();
         }
 
@@ -1014,14 +1379,21 @@
         // Calculate total production per second
         function calculatePointsPerSecond() {
             let total = 0;
-            const generatorMultiplier = getGeneratorMultiplier();
             
             generatorData.forEach(gen => {
                 const owned = gameState.generators[gen.id] || 0;
-                total += owned * gen.baseProduction * generatorMultiplier;
+                const generatorMultiplier = getGeneratorMultiplier(gen.id);
+                const generatorCPS = owned * gen.baseProduction * generatorMultiplier;
+                total += generatorCPS;
+                
+                // Store individual generator CPS for display
+                gen.currentCPS = generatorCPS;
             });
             
-            // Add clicking rate to total CPS
+            // Store generator CPS separately from total displayed CPS
+            gameState.generatorPointsPerSecond = total;
+            
+            // For display purposes, include clicking rate in total CPS shown to user
             const clickingCPS = gameState.clicksPerSecond * gameState.clickPower;
             gameState.pointsPerSecond = total + clickingCPS;
         }
@@ -1053,7 +1425,11 @@
                 const owned = gameState.generators[generator.id] || 0;
                 const cost = getGeneratorCost(generator);
                 const affordable = gameState.points >= cost;
-                const effectiveProduction = generator.baseProduction * getGeneratorMultiplier();
+                const generatorMultiplier = getGeneratorMultiplier(generator.id);
+                const effectiveProduction = generator.baseProduction * generatorMultiplier;
+                const currentCPS = generator.currentCPS || 0;
+                const percentageOfTotal = gameState.generatorPointsPerSecond > 0 ? 
+                    (currentCPS / gameState.generatorPointsPerSecond * 100) : 0;
                 
                 const generatorCard = document.createElement('div');
                 generatorCard.className = `skill-card ${affordable ? 'affordable' : 'locked'}`;
@@ -1074,8 +1450,11 @@
                         <span class="skill-cost">Cost: ${formatNumber(cost)}</span>
                     </div>
                     <div class="skill-production">
-                        Produces ${formatNumber(effectiveProduction)} points/sec each
-                        ${getGeneratorMultiplier() > 1 ? `(${formatNumber(generator.baseProduction)} base × ${getGeneratorMultiplier().toFixed(1)})` : ''}
+                        Each: ${formatNumber(effectiveProduction)} points/sec
+                        ${generatorMultiplier > 1 ? `(${formatNumber(generator.baseProduction)} base × ${generatorMultiplier.toFixed(1)})` : ''}
+                    </div>
+                    <div class="skill-production" style="margin-top: 0.2rem; font-weight: bold;">
+                        Total: ${formatNumber(currentCPS)} points/sec (${percentageOfTotal.toFixed(1)}%)
                     </div>
                 `;
                 
@@ -1087,29 +1466,59 @@
         function renderUpgrades() {
             const upgradesContainer = document.getElementById('upgradesGrid');
             upgradesContainer.innerHTML = '';
-            upgradeData.forEach(upgrade => {
-                const isPurchased = gameState.upgrades[upgrade.id];
-                if (isPurchased) return; // Hide purchased upgrades
+            
+            // Group upgrades by category
+            const categories = ['click', 'junior_dev', 'senior_dev', 'code_monkey'];
+            
+            categories.forEach(category => {
+                const categoryUpgrades = upgradeData.filter(upgrade => 
+                    upgrade.category === category && !gameState.upgrades[upgrade.id]
+                );
                 
-                const affordable = gameState.points >= upgrade.cost;
-                const upgradeCard = document.createElement('div');
-                upgradeCard.className = `skill-card ${affordable ? 'affordable' : 'locked'}`;
-                
-                upgradeCard.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    buyUpgrade(upgrade.id);
-                });
-                
-                upgradeCard.innerHTML = `
-                    <div class="skill-icon">${upgrade.icon}</div>
-                    <div class="skill-name">${upgrade.name}</div>
-                    <div class="skill-description">${upgrade.description}</div>
-                    <div class="skill-stats">
-                        <span class="skill-cost">Cost: ${formatNumber(upgrade.cost)}</span>
-                    </div>
-                `;
-                
-                upgradesContainer.appendChild(upgradeCard);
+                if (categoryUpgrades.length > 0) {
+                    // Add category header
+                    const categoryHeader = document.createElement('div');
+                    categoryHeader.style.gridColumn = '1 / -1';
+                    categoryHeader.style.textAlign = 'center';
+                    categoryHeader.style.padding = '1rem 0';
+                    categoryHeader.style.fontSize = '1.2rem';
+                    categoryHeader.style.fontWeight = 'bold';
+                    categoryHeader.style.color = '#4facfe';
+                    categoryHeader.style.borderBottom = '1px solid rgba(79, 172, 254, 0.3)';
+                    categoryHeader.style.marginBottom = '1rem';
+                    
+                    const categoryNames = {
+                        'click': '🖱️ Click Upgrades',
+                        'junior_dev': '👨‍💻 Junior Developer Upgrades',
+                        'senior_dev': '👨‍💼 Senior Developer Upgrades',
+                        'code_monkey': '🐵 Code Monkey Upgrades'
+                    };
+                    categoryHeader.textContent = categoryNames[category];
+                    upgradesContainer.appendChild(categoryHeader);
+                    
+                    // Add upgrades for this category
+                    categoryUpgrades.forEach(upgrade => {
+                        const affordable = gameState.points >= upgrade.cost;
+                        const upgradeCard = document.createElement('div');
+                        upgradeCard.className = `skill-card ${affordable ? 'affordable' : 'locked'}`;
+                        
+                        upgradeCard.addEventListener('mousedown', (e) => {
+                            e.preventDefault();
+                            buyUpgrade(upgrade.id);
+                        });
+                        
+                        upgradeCard.innerHTML = `
+                            <div class="skill-icon">${upgrade.icon}</div>
+                            <div class="skill-name">${upgrade.name}</div>
+                            <div class="skill-description">${upgrade.description}</div>
+                            <div class="skill-stats">
+                                <span class="skill-cost">Cost: ${formatNumber(upgrade.cost)}</span>
+                            </div>
+                        `;
+                        
+                        upgradesContainer.appendChild(upgradeCard);
+                    });
+                }
             });
         }
 
@@ -1194,28 +1603,50 @@
             const upgrade = upgradeData.find(u => u.id === upgradeId);
             if (upgrade.effect === 'clickMultiplier') {
                 gameState.clickPower *= upgrade.value;
+            } else if (upgrade.effect === 'critChance') {
+                gameState.critChance += upgrade.value;
+            } else if (upgrade.effect === 'critMultiplier') {
+                gameState.critMultiplier = upgrade.value;
             }
+            // Generator multipliers are handled in getGeneratorMultiplier function
+            
             // Recalculate points per second after upgrade
             calculatePointsPerSecond();
         }
 
-        // Get current generator multiplier from upgrades
-        function getGeneratorMultiplier() {
+        // Get current generator multiplier from upgrades (specific to each generator)
+        function getGeneratorMultiplier(generatorId) {
             let multiplier = 1;
             upgradeData.forEach(upgrade => {
-                if (gameState.upgrades[upgrade.id] && upgrade.effect === 'generatorMultiplier') {
+                if (gameState.upgrades[upgrade.id] && 
+                    upgrade.effect === 'generatorMultiplier' && 
+                    upgrade.targetGenerator === generatorId) {
                     multiplier *= upgrade.value;
                 }
             });
             return multiplier;
         }
 
+        // Get global generator multiplier for display purposes
+        function getGlobalGeneratorMultiplier() {
+            let totalMultiplier = 0;
+            let generatorCount = 0;
+            
+            generatorData.forEach(gen => {
+                const multiplier = getGeneratorMultiplier(gen.id);
+                totalMultiplier += multiplier;
+                generatorCount++;
+            });
+            
+            return generatorCount > 0 ? totalMultiplier / generatorCount : 1;
+        }
+
         // Update status display
         function updateStatusDisplay() {
             document.getElementById('clickPowerDisplay').textContent = formatNumber(gameState.clickPower);
+            document.getElementById('critChanceDisplay').textContent = gameState.critChance.toFixed(0) + '%';
             document.getElementById('clickRateDisplay').textContent = gameState.clicksPerSecond.toFixed(1) + '/s';
-            document.getElementById('generatorMultiplierDisplay').textContent = getGeneratorMultiplier().toFixed(1) + 'x';
-            document.getElementById('totalCpsDisplay').textContent = formatNumber(gameState.pointsPerSecond);
+            document.getElementById('generatorMultiplierDisplay').textContent = getGlobalGeneratorMultiplier().toFixed(1) + 'x';
         }
 
         // Format large numbers
@@ -1283,9 +1714,9 @@
         function startGameLoop() {
             // Main game loop - runs every 100ms
             setInterval(() => {
-                // Add points from generators
-                gameState.points += gameState.pointsPerSecond / 10; // Update 10 times per second
-                gameState.totalPointsEarned += gameState.pointsPerSecond / 10;
+                // Add points from generators ONLY (not from clicking rate)
+                gameState.points += gameState.generatorPointsPerSecond / 10; // Update 10 times per second
+                gameState.totalPointsEarned += gameState.generatorPointsPerSecond / 10;
                 
                 updateDisplay();
                 
@@ -1368,12 +1799,26 @@
                 gameState.recentClicks.push(now);
                 gameState.lastClickTime = now;
                 
-                // Add points for clicking
-                gameState.points += gameState.clickPower;
-                gameState.totalClicks++;
-                gameState.totalPointsEarned += gameState.clickPower;
+                // Calculate click damage with crit chance
+                let clickDamage = gameState.clickPower;
+                let isCrit = false;
                 
-                createFloatingNumber(`+${gameState.clickPower}`, '#00f2fe');
+                if (gameState.critChance > 0 && Math.random() * 100 < gameState.critChance) {
+                    clickDamage *= gameState.critMultiplier;
+                    isCrit = true;
+                }
+                
+                // Add points for clicking
+                gameState.points += clickDamage;
+                gameState.totalClicks++;
+                gameState.totalPointsEarned += clickDamage;
+                
+                // Show floating number with crit styling
+                if (isCrit) {
+                    createFloatingNumber(`CRIT! +${clickDamage}`, '#ff6b6b');
+                } else {
+                    createFloatingNumber(`+${clickDamage}`, '#00f2fe');
+                }
                 
                 // Random greeting update
                 const response = await fetch('/api/greeting');
@@ -1385,6 +1830,7 @@
                 updateDisplay();
                 updateGeneratorAffordability(); // Use the lighter update function
                 checkAchievements();
+                checkGameHubReveal(); // Check if we should reveal the game hub
                 
                 // Add click particle effect
                 createClickParticles();
