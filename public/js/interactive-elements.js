@@ -241,6 +241,11 @@ class InteractiveElement extends FloatingElement {
                 this.startPeriodicScoreUpdate(playerName);
                 // Update the element appearance
                 this.updateSubmitScoreElement();
+                
+                // Enable player tracking now that they've submitted to leaderboard
+                if (window.playerTracker) {
+                    window.playerTracker.enableTracking(playerName);
+                }
             }
             
             alert('Score submitted! You are now being tracked automatically every 5 minutes.');

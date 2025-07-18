@@ -12,6 +12,11 @@ class Leaderboard {
         // Start periodic updates if already submitted
         if (this.scoreSubmitted && this.playerName) {
             this.startPeriodicScoreUpdate();
+            
+            // Enable player tracking for existing leaderboard participants
+            if (window.playerTracker) {
+                window.playerTracker.enableTracking(this.playerName);
+            }
         }
     }
 
@@ -26,14 +31,19 @@ class Leaderboard {
             .then(res => res.json())
             .then(data => {
                 if (data.leaderboard && data.leaderboard.length > 0) {
+                    const currentPlayerName = localStorage.getItem('playerName');
                     const leaderboardHTML = data.leaderboard.map((entry, index) => {
                         const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
                         const nameStyle = index < 3 ? 'font-weight:700; text-shadow:1px 1px 2px rgba(0,0,0,0.3);' : 'font-weight:600;';
+                        const isCurrentPlayer = currentPlayerName && entry.name === currentPlayerName;
+                        const playerNameDisplay = isCurrentPlayer ? `${entry.name} (You)` : entry.name;
+                        const highlightStyle = isCurrentPlayer ? 'background:rgba(255,215,0,0.15); border-left:4px solid #FFD700;' : `border-left:4px solid ${index < 3 ? '#FFD700' : 'rgba(255,255,255,0.3)'};`;
+                        
                         return `
-                            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.8em 1em; margin:0.5em 0; background:rgba(255,255,255,0.1); border-radius:0.5em; border-left:4px solid ${index < 3 ? '#FFD700' : 'rgba(255,255,255,0.3)'}; backdrop-filter:blur(10px);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.8em 1em; margin:0.5em 0; background:rgba(255,255,255,0.1); border-radius:0.5em; ${highlightStyle} backdrop-filter:blur(10px);">
                                 <span style="display:flex; align-items:center; gap:0.8em;">
                                     <span style="font-size:1.2em; min-width:2em;">${medal}</span>
-                                    <span style="${nameStyle}; color:white;">${entry.name}</span>
+                                    <span style="${nameStyle}; color:white;">${playerNameDisplay}</span>
                                 </span>
                                 <span style="font-size:1.1em; font-weight:700; color:#FFD700; text-shadow:1px 1px 2px rgba(0,0,0,0.3);">${entry.score.toLocaleString()}</span>
                             </div>
