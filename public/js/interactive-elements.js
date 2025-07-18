@@ -199,7 +199,7 @@ class InteractiveElement extends FloatingElement {
         
         // Submit to backend
         try {
-            await fetch('http://localhost:5678/submit_score', {
+            await fetch('/api/submit_score', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: playerName, score: score })
@@ -236,7 +236,7 @@ class InteractiveElement extends FloatingElement {
             if (score <= 0) return;
             
             try {
-                await fetch('http://localhost:5678/submit_score', {
+                await fetch('/api/submit_score', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: playerName, score: score })

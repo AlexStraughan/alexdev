@@ -144,7 +144,7 @@ class Leaderboard {
             
             // Submit to backend
             try {
-                await fetch('http://localhost:5678/submit_score', {
+                await fetch('/api/submit_score', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: this.playerName, score: score })
@@ -198,7 +198,7 @@ class Leaderboard {
             if (score <= 0) return;
             
             try {
-                await fetch('http://localhost:5678/submit_score', {
+                await fetch('/api/submit_score', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: this.playerName, score: score })
@@ -211,7 +211,7 @@ class Leaderboard {
 
     // Fetch leaderboard data from backend
     fetchLeaderboard() {
-        fetch('http://localhost:5678/leaderboard')
+        fetch('/api/leaderboard')
             .then(res => res.json())
             .then(data => {
                 const content = this.leaderboardModal.querySelector('#leaderboardContent');
