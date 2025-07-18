@@ -119,6 +119,11 @@ function switchTab(tabName) {
     
     if (tabButton) tabButton.classList.add('active');
     if (tabContent) tabContent.classList.add('active');
+    
+    // If switching to leaderboard, load the leaderboard data
+    if (tabName === 'leaderboard' && window.leaderboard) {
+        window.leaderboard.fetchLeaderboardForTab();
+    }
 }
 
 // Make switchTab globally available immediately
