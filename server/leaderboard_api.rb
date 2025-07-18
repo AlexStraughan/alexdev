@@ -5,6 +5,10 @@ require 'sqlite3'
 
 set :port, 5678
 
+# Track active players
+ACTIVE_PLAYERS = {}
+PLAYER_TIMEOUT = 180 # 3 minutes
+
 before do
   response.headers['Access-Control-Allow-Origin'] = '*'
   response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
@@ -147,4 +151,50 @@ end
 get '/leaderboard' do
   rows = DB.execute("SELECT name, score FROM scores ORDER BY score DESC LIMIT 10")
   { leaderboard: rows.map { |name, score| { name: name, score: score } } }.to_json
+end
+
+# Player tracking endpoints
+post '/player-activity' do
+  content_type :json
+  
+  begin
+    request.body.rewind
+    data = JSON.parse(request.body.read)
+    
+    player_id = data['player_id']
+    player_name = data['player_name'] || "Player #{player_id&.slice(0, 6)}"
+    
+    return { error: 'Invalid player ID' }.to_json if player_id.nil? || player_id.strip.empty?
+    
+    # Update player activity
+    ACTIVE_PLAYERS[player_id] = {
+      'id' => player_id,
+      'name' => player_name,
+      'last_seen' => Time.now,
+      'score' => data['score'] || 0,
+      'points_per_second' => data['points_per_second'] || 0,
+      'generators_owned' => data['generators_owned'] || 0
+    }
+    
+    { success: true, player_id: player_id }.to_json
+  rescue => e
+    status 500
+    { error: "Player tracking error: #{e.message}" }.to_json
+  end
+end
+
+get '/active-players' do
+  content_type :json
+  
+  # Remove inactive players
+  current_time = Time.now
+  ACTIVE_PLAYERS.reject! do |id, player|
+    current_time - player['last_seen'] > PLAYER_TIMEOUT
+  end
+  
+  # Return active players
+  {
+    players: ACTIVE_PLAYERS.values,
+    count: ACTIVE_PLAYERS.size
+  }.to_json
 end
