@@ -141,8 +141,9 @@ class InteractiveElement extends FloatingElement {
         const scoreSubmitted = localStorage.getItem('scoreSubmitted') === 'true';
         
         if (scoreSubmitted && playerName) {
-            // Show player name with a different style
-            return `<span style="font-family: Arial, sans-serif; font-weight: bold; color: white; background: #10b981; padding: 0.2em 0.3em; border-radius: 0.1em; font-size: 0.7em; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">👤 ${playerName}</span>`;
+            // Show player name with a different style (max 10 characters)
+            const displayName = playerName.length > 10 ? playerName.substring(0, 10) : playerName;
+            return `<span style="font-family: Arial, sans-serif; font-weight: bold; color: white; background: #10b981; padding: 0.2em 0.3em; border-radius: 0.1em; font-size: 0.7em; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">${displayName}</span>`;
         } else {
             // Show submit score button
             return '<span style="font-family: Arial, sans-serif; font-weight: bold; color: white; background: #4facfe; padding: 0.2em 0.3em; border-radius: 0.1em; font-size: 0.8em;">🏆</span>';
