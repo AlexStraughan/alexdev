@@ -66,6 +66,8 @@ class InteractiveElement extends FloatingElement {
             
             if (this.type === 'submit_score') {
                 this.handleSubmitScore();
+            } else if (this.type === 'pause') {
+                this.handlePause();
             } else {
                 window.open(config.url, '_blank');
             }
@@ -103,12 +105,12 @@ class InteractiveElement extends FloatingElement {
                 clickFilter: 'drop-shadow(0 0 20px rgba(51, 51, 51, 1))',
                 url: 'https://github.com/alexstraughan'
             },
-            email: {
-                content: '<span style="font-family: Arial, sans-serif; font-weight: bold; color: white; background: #D44638; padding: 0.2em 0.3em; border-radius: 0.1em; font-size: 0.8em;">@</span>',
-                filter: 'drop-shadow(0 0 10px rgba(212, 70, 56, 0.6))',
-                hoverFilter: 'drop-shadow(0 0 15px rgba(212, 70, 56, 0.8))',
-                clickFilter: 'drop-shadow(0 0 20px rgba(212, 70, 56, 1))',
-                url: 'mailto:alexstraughan.dev@gmail.com'
+            pause: {
+                content: this.getPauseContent(),
+                filter: this.getPauseFilter(),
+                hoverFilter: this.getPauseHoverFilter(),
+                clickFilter: this.getPauseClickFilter(),
+                url: '#'
             },
             twitter: {
                 content: '<span style="font-family: Arial, sans-serif; font-weight: bold; color: white; background: #1DA1F2; padding: 0.2em 0.3em; border-radius: 0.1em; font-size: 0.8em;">X</span>',
@@ -170,6 +172,34 @@ class InteractiveElement extends FloatingElement {
             ? 'drop-shadow(0 0 20px rgba(16, 185, 129, 1))'
             : 'drop-shadow(0 0 20px rgba(79, 172, 254, 1))';
     }
+
+    getPauseContent() {
+        const isPaused = window.physics && window.physics.isPaused;
+        return isPaused 
+            ? '<span style="font-family: Arial, sans-serif; font-weight: bold; color: white; background: #10b981; padding: 0.2em 0.3em; border-radius: 0.1em; font-size: 0.8em;">▶️</span>'
+            : '<span style="font-family: Arial, sans-serif; font-weight: bold; color: white; background: #f59e0b; padding: 0.2em 0.3em; border-radius: 0.1em; font-size: 0.8em;">⏸️</span>';
+    }
+
+    getPauseFilter() {
+        const isPaused = window.physics && window.physics.isPaused;
+        return isPaused 
+            ? 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.6))'
+            : 'drop-shadow(0 0 10px rgba(245, 158, 11, 0.6))';
+    }
+
+    getPauseHoverFilter() {
+        const isPaused = window.physics && window.physics.isPaused;
+        return isPaused 
+            ? 'drop-shadow(0 0 15px rgba(16, 185, 129, 0.8))'
+            : 'drop-shadow(0 0 15px rgba(245, 158, 11, 0.8))';
+    }
+
+    getPauseClickFilter() {
+        const isPaused = window.physics && window.physics.isPaused;
+        return isPaused 
+            ? 'drop-shadow(0 0 20px rgba(16, 185, 129, 1))'
+            : 'drop-shadow(0 0 20px rgba(245, 158, 11, 1))';
+    }
     
     async handleSubmitScore() {
         let playerName = localStorage.getItem('playerName');
@@ -221,6 +251,21 @@ class InteractiveElement extends FloatingElement {
     
     updateSubmitScoreElement() {
         if (this.type === 'submit_score') {
+            const config = this.getTypeConfig();
+            this.element.innerHTML = config.content;
+            this.element.style.filter = config.filter;
+        }
+    }
+
+    handlePause() {
+        if (window.physics) {
+            window.physics.togglePause();
+            this.updatePauseElement();
+        }
+    }
+
+    updatePauseElement() {
+        if (this.type === 'pause') {
             const config = this.getTypeConfig();
             this.element.innerHTML = config.content;
             this.element.style.filter = config.filter;

@@ -13,6 +13,8 @@ class Physics {
         this.isOrbiting = false;
         this.holdTimer = null; // Timer for hold delay
         this.holdDelay = 500; // 0.5 seconds in milliseconds
+        this.isPaused = false; // New pause state
+        this.pauseButton = null; // Reference to pause button for updates
         this.emojis = [
             '💻', '🚀', '⚡', '🎯', '✨', '🔧', '💡', '🎨', '📱', '⚙️',
             '🖥️', '📊', '🌟', '💎', '🔮', '🎪', '🎭', '🎨', '🎯',
@@ -124,6 +126,18 @@ class Physics {
         });
     }
     
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        console.log('Physics animation', this.isPaused ? 'paused' : 'resumed');
+        
+        // Update all pause buttons
+        this.interactiveElements.forEach(element => {
+            if (element.type === 'pause') {
+                element.updatePauseElement();
+            }
+        });
+    }
+
     createFloatingElements() {
         // Reduce console logging for performance
         // console.log('Creating floating elements...');
@@ -134,8 +148,8 @@ class Physics {
         const viewportHeight = window.innerHeight;
         // console.log('Viewport dimensions:', viewportWidth, 'x', viewportHeight);
         
-        // Create interactive elements (LinkedIn, GitHub, Email, etc.)
-        const interactiveTypes = ['linkedin', 'github', 'email', 'twitter', 'portfolio', 'submit_score'];
+        // Create interactive elements (LinkedIn, GitHub, Pause, etc.)
+        const interactiveTypes = ['linkedin', 'github', 'pause', 'twitter', 'portfolio', 'submit_score'];
         const numInteractive = 6; // Create all 6 types
         
         for (let i = 0; i < numInteractive; i++) {
@@ -176,16 +190,19 @@ class Physics {
         if (!this.lastFrameTime) this.lastFrameTime = now;
         
         if (now - this.lastFrameTime >= 16) {
-            this.elements.forEach(element => {
-                element.update(this.mouseX, this.mouseY, this.elements);
-            });
+            // Only update if not paused
+            if (!this.isPaused) {
+                this.elements.forEach(element => {
+                    element.update(this.mouseX, this.mouseY, this.elements);
+                });
+            }
             this.lastFrameTime = now;
             
             // Debug: Log every 60 frames (about once per second)
             if (!this.frameCount) this.frameCount = 0;
             this.frameCount++;
             if (this.frameCount % 60 === 0) {
-                // console.log('Animation running, frame:', this.frameCount, 'elements:', this.elements.length);
+                // console.log('Animation running, frame:', this.frameCount, 'elements:', this.elements.length, 'paused:', this.isPaused);
             }
         }
         
