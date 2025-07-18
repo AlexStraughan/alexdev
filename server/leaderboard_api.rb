@@ -2,12 +2,18 @@
 require 'sinatra'
 require 'json'
 require 'sqlite3'
+require 'securerandom'
 
 set :port, 5678
 
 # Track active players
 ACTIVE_PLAYERS = {}
 PLAYER_TIMEOUT = 180 # 3 minutes
+
+# Track chat messages
+CHAT_MESSAGES = []
+MAX_CHAT_MESSAGES = 50
+CHAT_MESSAGE_TIMEOUT = 300 # 5 minutes
 
 before do
   response.headers['Access-Control-Allow-Origin'] = '*'
@@ -197,4 +203,78 @@ get '/active-players' do
     players: ACTIVE_PLAYERS.values,
     count: ACTIVE_PLAYERS.size
   }.to_json
+end
+
+# Chat endpoints
+post '/chat-message' do
+  content_type :json
+  
+  begin
+    request.body.rewind
+    data = JSON.parse(request.body.read)
+    
+    player_id = data['player_id']
+    message = data['message']
+    
+    return { error: 'Invalid player ID' }.to_json if player_id.nil? || player_id.strip.empty?
+    return { error: 'Invalid message' }.to_json if message.nil? || message.strip.empty?
+    return { error: 'Message too long' }.to_json if message.length > 200
+    
+    # Get player info
+    player = ACTIVE_PLAYERS[player_id]
+    return { error: 'Player not found' }.to_json unless player
+    
+    # Create chat message
+    chat_message = {
+      'id' => SecureRandom.uuid,
+      'player_id' => player_id,
+      'player_name' => player['name'],
+      'message' => message.strip,
+      'timestamp' => Time.now,
+      'expires_at' => Time.now + CHAT_MESSAGE_TIMEOUT
+    }
+    
+    # Add to messages array
+    CHAT_MESSAGES << chat_message
+    
+    # Keep only recent messages
+    if CHAT_MESSAGES.length > MAX_CHAT_MESSAGES
+      CHAT_MESSAGES.shift
+    end
+    
+    { success: true, message_id: chat_message['id'] }.to_json
+  rescue => e
+    status 500
+    { error: "Chat error: #{e.message}" }.to_json
+  end
+end
+
+get '/chat-messages' do
+  content_type :json
+  
+  begin
+    current_time = Time.now
+    
+    # Remove expired messages
+    CHAT_MESSAGES.reject! do |msg|
+      current_time > msg['expires_at']
+    end
+    
+    # Return recent messages
+    {
+      messages: CHAT_MESSAGES.map do |msg|
+        {
+          id: msg['id'],
+          player_id: msg['player_id'],
+          player_name: msg['player_name'],
+          message: msg['message'],
+          timestamp: msg['timestamp'].to_i,
+          age: (current_time - msg['timestamp']).to_i
+        }
+      end
+    }.to_json
+  rescue => e
+    status 500
+    { error: "Error fetching messages: #{e.message}" }.to_json
+  end
 end

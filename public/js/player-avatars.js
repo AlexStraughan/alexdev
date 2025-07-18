@@ -69,6 +69,297 @@ class PlayerAvatars {
         return Math.abs(hash);
     }
     
+    createChatInput() {
+        return `
+            <div class="chat-input-container" style="
+                position: absolute;
+                bottom: 45px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(255, 255, 255, 0.98);
+                border: 2px solid #4a90e2;
+                border-radius: 20px;
+                padding: 8px 12px;
+                display: none;
+                min-width: 220px;
+                max-width: 280px;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(10px);
+                z-index: 1001;
+                animation: chatInputAppear 0.3s ease-out;
+            ">
+                <input type="text" class="chat-input" placeholder="Type a message..." style="
+                    border: none;
+                    outline: none;
+                    background: transparent;
+                    width: 100%;
+                    font-size: 14px;
+                    color: #333;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    padding: 4px 0;
+                " maxlength="200">
+                <div class="chat-input-buttons" style="
+                    margin-top: 8px;
+                    display: flex;
+                    gap: 8px;
+                    justify-content: flex-end;
+                ">
+                    <button class="chat-send-btn" style="
+                        background: linear-gradient(135deg, #4a90e2, #357abd);
+                        color: white;
+                        border: none;
+                        border-radius: 15px;
+                        padding: 6px 12px;
+                        font-size: 12px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        font-weight: 500;
+                        box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+                    ">Send</button>
+                    <button class="chat-cancel-btn" style="
+                        background: linear-gradient(135deg, #ddd, #bbb);
+                        color: #333;
+                        border: none;
+                        border-radius: 15px;
+                        padding: 6px 12px;
+                        font-size: 12px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        font-weight: 500;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                    ">Cancel</button>
+                </div>
+                <div class="chat-char-count" style="
+                    font-size: 10px;
+                    color: #666;
+                    text-align: right;
+                    margin-top: 4px;
+                    opacity: 0.7;
+                ">0/200</div>
+            </div>
+        `;
+    }
+
+    setupChatInput(avatar) {
+        const chatContainer = avatar.querySelector('.chat-input-container');
+        const chatInput = avatar.querySelector('.chat-input');
+        const sendBtn = avatar.querySelector('.chat-send-btn');
+        const cancelBtn = avatar.querySelector('.chat-cancel-btn');
+        const charCount = avatar.querySelector('.chat-char-count');
+        
+        if (!chatContainer || !chatInput || !sendBtn || !cancelBtn || !charCount) return;
+        
+        let isInputActive = false;
+        
+        // Add button hover effects
+        sendBtn.addEventListener('mouseenter', () => {
+            sendBtn.style.transform = 'translateY(-1px)';
+            sendBtn.style.boxShadow = '0 4px 12px rgba(74, 144, 226, 0.4)';
+        });
+        
+        sendBtn.addEventListener('mouseleave', () => {
+            sendBtn.style.transform = 'translateY(0)';
+            sendBtn.style.boxShadow = '0 2px 8px rgba(74, 144, 226, 0.3)';
+        });
+        
+        cancelBtn.addEventListener('mouseenter', () => {
+            cancelBtn.style.transform = 'translateY(-1px)';
+            cancelBtn.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+        });
+        
+        cancelBtn.addEventListener('mouseleave', () => {
+            cancelBtn.style.transform = 'translateY(0)';
+            cancelBtn.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';
+        });
+        
+        // Update character count
+        chatInput.addEventListener('input', () => {
+            const count = chatInput.value.length;
+            charCount.textContent = `${count}/200`;
+            
+            if (count > 180) {
+                charCount.style.color = '#ff4444';
+            } else if (count > 150) {
+                charCount.style.color = '#ff8800';
+            } else {
+                charCount.style.color = '#666';
+            }
+        });
+        
+        const showChatInput = () => {
+            chatContainer.style.display = 'block';
+            chatContainer.style.animation = 'chatInputAppear 0.3s ease-out';
+            setTimeout(() => chatInput.focus(), 100);
+        };
+        
+        const hideChatInput = () => {
+            if (!isInputActive) {
+                chatContainer.style.animation = 'chatInputDisappear 0.3s ease-out';
+                setTimeout(() => {
+                    chatContainer.style.display = 'none';
+                    chatInput.value = '';
+                    charCount.textContent = '0/200';
+                    charCount.style.color = '#666';
+                }, 300);
+            }
+        };
+        
+        const sendMessage = async () => {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            if (window.chatSystem) {
+                const result = await window.chatSystem.sendMessage(message);
+                if (result.success) {
+                    isInputActive = false;
+                    hideChatInput();
+                    // Show success feedback
+                    this.showMessageFeedback(avatar, 'Message sent! 💬', '#4a90e2');
+                } else {
+                    this.showMessageFeedback(avatar, result.error || 'Failed to send message', '#ff4444');
+                }
+            }
+        };
+        
+        // Show chat input on avatar hover (only for current player)
+        avatar.addEventListener('mouseenter', showChatInput);
+        
+        // Hide chat input when mouse leaves avatar area - but only if input is not active
+        avatar.addEventListener('mouseleave', (e) => {
+            if (!isInputActive && !chatContainer.contains(e.relatedTarget)) {
+                setTimeout(() => {
+                    if (!chatContainer.matches(':hover') && !isInputActive) {
+                        hideChatInput();
+                    }
+                }, 100);
+            }
+        });
+        
+        // Keep chat input visible when hovering over it
+        chatContainer.addEventListener('mouseenter', () => {
+            chatContainer.style.display = 'block';
+        });
+        
+        // Only hide when leaving chat container if input is not focused
+        chatContainer.addEventListener('mouseleave', (e) => {
+            if (!isInputActive && !avatar.contains(e.relatedTarget)) {
+                hideChatInput();
+            }
+        });
+        
+        // Mark input as active when focused
+        chatInput.addEventListener('focus', () => {
+            isInputActive = true;
+            chatContainer.style.display = 'block';
+        });
+        
+        // Mark input as inactive when blurred (but don't hide immediately)
+        chatInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                isInputActive = false;
+                // Only hide if mouse is not over the container
+                if (!chatContainer.matches(':hover') && !avatar.matches(':hover')) {
+                    hideChatInput();
+                }
+            }, 150);
+        });
+        
+        // Send message on Enter key
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+            if (e.key === 'Escape') {
+                isInputActive = false;
+                hideChatInput();
+            }
+        });
+        
+        // Send message on button click
+        sendBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+        
+        // Cancel on button click
+        cancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            isInputActive = false;
+            hideChatInput();
+        });
+        
+        // Add chat input animations if not already added
+        if (!document.querySelector('#chat-input-animations')) {
+            const style = document.createElement('style');
+            style.id = 'chat-input-animations';
+            style.textContent = `
+                @keyframes chatInputAppear {
+                    0% { 
+                        opacity: 0; 
+                        transform: translateX(-50%) translateY(10px) scale(0.9); 
+                    }
+                    100% { 
+                        opacity: 1; 
+                        transform: translateX(-50%) translateY(0) scale(1); 
+                    }
+                }
+                @keyframes chatInputDisappear {
+                    0% { 
+                        opacity: 1; 
+                        transform: translateX(-50%) translateY(0) scale(1); 
+                    }
+                    100% { 
+                        opacity: 0; 
+                        transform: translateX(-50%) translateY(-10px) scale(0.9); 
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+    
+    showMessageFeedback(avatar, message, color) {
+        // Remove existing feedback
+        const existingFeedback = avatar.querySelector('.chat-feedback');
+        if (existingFeedback) {
+            existingFeedback.remove();
+        }
+        
+        const feedback = document.createElement('div');
+        feedback.className = 'chat-feedback';
+        feedback.style.cssText = `
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${color};
+            color: white;
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1002;
+            pointer-events: none;
+            animation: feedbackAppear 0.3s ease-out;
+        `;
+        
+        feedback.textContent = message;
+        avatar.appendChild(feedback);
+        
+        // Auto-remove after 2 seconds
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.style.animation = 'feedbackDisappear 0.3s ease-out';
+                setTimeout(() => {
+                    if (feedback.parentNode) {
+                        feedback.remove();
+                    }
+                }, 300);
+            }
+        }, 2000);
+    }
+    
     createPlayerAvatar(player) {
         const avatar = document.createElement('div');
         avatar.className = 'player-avatar';
@@ -125,9 +416,10 @@ class PlayerAvatars {
                 transition: opacity 0.3s ease;
                 pointer-events: none;
             ">${playerNameDisplay}</div>
+            ${isCurrentPlayer ? this.createChatInput() : ''}
         `;
         
-        // Add hover effects
+        // Add hover effects for tooltip
         avatar.addEventListener('mouseenter', () => {
             avatar.style.transition = 'transform 0.3s ease'; // Only transition transform
             avatar.style.transform = 'scale(1.2)';
@@ -139,6 +431,11 @@ class PlayerAvatars {
             avatar.style.transform = 'scale(1)';
             avatar.querySelector('.player-tooltip').style.opacity = '0';
         });
+        
+        // Setup chat input for current player
+        if (isCurrentPlayer) {
+            this.setupChatInput(avatar);
+        }
         
         // Random starting position
         const startX = Math.random() * (window.innerWidth - 40);
