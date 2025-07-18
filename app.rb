@@ -15,7 +15,7 @@ end
 
 # Track active players
 ACTIVE_PLAYERS = {}
-PLAYER_TIMEOUT = 30 # seconds
+PLAYER_TIMEOUT = 360 # 6 minutes (give 1 minute buffer after 5-minute heartbeat)
 
 # Track chat messages
 CHAT_MESSAGES = []
@@ -141,7 +141,7 @@ if development?
       db.close
       
       { leaderboard: scores }.to_json
-    rescue => e
+    rescue
       { leaderboard: [] }.to_json
     end
   end
@@ -211,11 +211,17 @@ if development?
       
       return { error: 'Invalid player ID' }.to_json if player_id.nil? || player_id.strip.empty?
       
+      # Track first_seen for playtime calculation
+      now = Time.now
+      existing_player = ACTIVE_PLAYERS[player_id]
+      first_seen = existing_player && existing_player['first_seen'] ? existing_player['first_seen'] : now
+      
       # Update player activity
       ACTIVE_PLAYERS[player_id] = {
         'id' => player_id,
         'name' => player_name,
-        'last_seen' => Time.now,
+        'last_seen' => now,
+        'first_seen' => first_seen,
         'score' => data['score'] || 0,
         'points_per_second' => data['points_per_second'] || 0,
         'generators_owned' => data['generators_owned'] || 0
@@ -237,9 +243,20 @@ if development?
       current_time - player['last_seen'] > PLAYER_TIMEOUT
     end
     
-    # Return active players
+    # Return active players with playtime data
     {
-      players: ACTIVE_PLAYERS.values,
+      players: ACTIVE_PLAYERS.values.map do |player|
+        {
+          'id' => player['id'],
+          'name' => player['name'],
+          'score' => player['score'],
+          'points_per_second' => player['points_per_second'],
+          'generators_owned' => player['generators_owned'],
+          'first_seen' => player['first_seen']&.to_i,
+          'last_seen' => player['last_seen']&.to_i,
+          'playtime_seconds' => player['first_seen'] ? (player['last_seen'] - player['first_seen']).to_i : 0
+        }
+      end,
       count: ACTIVE_PLAYERS.size
     }.to_json
   end

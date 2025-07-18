@@ -105,10 +105,10 @@ class PlayerTracker {
         // Send initial activity update
         this.updatePlayerActivity();
         
-        // Update every 60 seconds (1 minute)
+        // Update every 5 minutes (300 seconds)
         this.updateInterval = setInterval(() => {
             this.updatePlayerActivity(this.getGameData());
-        }, 60000);
+        }, 300000); // 5 minutes
     }
     
     getGameData() {
@@ -132,8 +132,8 @@ class PlayerTracker {
             if (!this.isTracking) return;
             
             const now = Date.now();
-            // Throttle updates to every 30 seconds from clicks
-            if (now - this.lastActivityUpdate > 30000) {
+            // Throttle updates to every 2 minutes from clicks
+            if (now - this.lastActivityUpdate > 120000) { // 2 minutes
                 this.updatePlayerActivity(this.getGameData());
             }
         });
