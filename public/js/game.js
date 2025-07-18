@@ -323,6 +323,11 @@ class Game {
             { id: "million_points", name: "Code Millionaire", description: "Earn 1,000,000 points", requirement: 1000000, type: "points" },
             { id: "hundred_per_second", name: "Efficient Coder", description: "Generate 100 points per second", requirement: 100, type: "cps" }
         ];
+
+        // Cache for greetings to avoid API calls on every click
+        this.greetingCache = [];
+        this.lastGreetingFetch = 0;
+        this.greetingCacheExpiry = 5 * 60 * 1000; // 5 minutes
     }
 
     // Load game state from localStorage
@@ -342,6 +347,9 @@ class Game {
     async initialize() {
         this.loadGameState();
         await this.loadGenerators();
+        
+        // Load greetings cache on startup
+        await this.loadGreetings();
         
         this.calculatePointsPerSecond();
         this.updateDisplay();
@@ -692,8 +700,6 @@ class Game {
     // Handle click
     async handleClick() {
         try {
-            // console.log('Click detected! Total clicks before:', this.state.totalClicks);
-            
             // Track click timing
             const now = Date.now();
             this.state.recentClicks.push(now);
@@ -713,8 +719,6 @@ class Game {
             this.state.totalClicks++;
             this.state.totalPointsEarned += clickDamage;
             
-            // console.log('Click processed! Total clicks now:', this.state.totalClicks, 'Points:', this.state.points);
-            
             // Show floating number with crit styling
             if (isCrit) {
                 window.ui.createFloatingNumber(`CRIT! +${clickDamage}`, '#ff6b6b');
@@ -722,10 +726,13 @@ class Game {
                 window.ui.createFloatingNumber(`+${clickDamage}`, '#00f2fe');
             }
             
-            // Random greeting update
-            const response = await fetch('/api/greeting');
-            const data = await response.json();
-            document.getElementById('greetingText').textContent = data.greeting;
+            // Update greeting from cache (no API call needed)
+            document.getElementById('greetingText').textContent = this.getRandomGreeting();
+            
+            // Refresh greetings cache periodically (every 5 minutes)
+            if (Math.random() < 0.001) { // Very low chance per click
+                this.refreshGreetingsIfNeeded();
+            }
             
             this.updateClickingRate();
             this.updateDisplay();
@@ -741,6 +748,57 @@ class Game {
             }
         } catch (error) {
             console.error('Error in handleClick:', error);
+        }
+    }
+
+    // Load greetings from API and cache them
+    async loadGreetings() {
+        try {
+            const response = await fetch('/api/greeting');
+            const data = await response.json();
+            
+            // If we get a single greeting, create a variety
+            if (data.greeting) {
+                this.greetingCache = [
+                    data.greeting,
+                    "Code your way to success! 🚀",
+                    "Building the digital future! 💻", 
+                    "Every click brings more power! ⚡",
+                    "The code flows through you! ✨",
+                    "Generating infinite possibilities! 🌟",
+                    "Debug the world! 🐛",
+                    "Compile your dreams! ⚙️",
+                    "Stack overflow of success! 📚",
+                    "Git commit to greatness! 🔧"
+                ];
+            }
+            this.lastGreetingFetch = Date.now();
+        } catch (error) {
+            console.error('Error loading greetings:', error);
+            // Fallback greetings if API fails
+            this.greetingCache = [
+                "Code your way to success! 🚀",
+                "Building the digital future! 💻",
+                "Every click brings more power! ⚡",
+                "The code flows through you! ✨",
+                "Generating infinite possibilities! 🌟"
+            ];
+        }
+    }
+
+    // Get a random greeting from cache
+    getRandomGreeting() {
+        if (this.greetingCache.length === 0) {
+            return "Keep coding! 💻";
+        }
+        return this.greetingCache[Math.floor(Math.random() * this.greetingCache.length)];
+    }
+
+    // Check if we need to refresh greetings cache
+    async refreshGreetingsIfNeeded() {
+        const now = Date.now();
+        if (now - this.lastGreetingFetch > this.greetingCacheExpiry) {
+            await this.loadGreetings();
         }
     }
 
