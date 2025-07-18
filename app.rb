@@ -238,8 +238,9 @@ if development?
     }.to_json
   end
 
-  # Homepage route
-  get '/' do
-    erb :index
-  end
+end
+
+# Homepage route
+get '/' do
+  erb :index
 end
