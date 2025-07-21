@@ -15,7 +15,7 @@ APP_DIR="/var/www/alexdev"
 APP_FILE="app.rb"
 WEBSOCKET_FILE="websocket_server.rb"
 APP_PORT=4568
-WEBSOCKET_PORT=4567
+WEBSOCKET_PORT=9292
 
 echo -e "${BLUE}=== AlexDev Server Manager ===${NC}"
 echo "Working directory: $APP_DIR"
