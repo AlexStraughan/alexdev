@@ -34,18 +34,7 @@ options '/api/*' do
 end
 
 # Game API endpoints
-  before '/api/*' do
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-  end
-
-  options '/api/*' do
-    200
-  end
-
-  # Game API endpoints
-  get '/api/greeting' do
+get '/api/greeting' do
     content_type :json
     greetings = [
       "Code your way to success! 🚀",
@@ -56,9 +45,9 @@ end
     ]
     
     { greeting: greetings.sample }.to_json
-  end
+end
 
-  get '/api/generators' do
+get '/api/generators' do
     content_type :json
     generators = [
       { 
