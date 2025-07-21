@@ -5,6 +5,7 @@ require 'sqlite3'
 require 'securerandom'
 require 'digest/sha1'
 require 'base64'
+require 'openssl'
 
 # Load environment variables from .env file if it exists
 begin
@@ -1014,9 +1015,29 @@ if __FILE__ == $0
     Signal.trap('INT') { EventMachine.stop }
     Signal.trap('TERM') { EventMachine.stop }
     
-    EventMachine.start_server('0.0.0.0', 9292, WebSocketConnection, game_server)
+    # SSL Certificate paths
+    ssl_cert_path = '/etc/letsencrypt/live/straughan.dev/fullchain.pem'
+    ssl_key_path = '/etc/letsencrypt/live/straughan.dev/privkey.pem'
     
-    puts "🚀 WebSocket server running on ws://0.0.0.0:9292"
+    # Check if SSL certificates exist
+    if File.exist?(ssl_cert_path) && File.exist?(ssl_key_path)
+      # Start secure WebSocket server (WSS)
+      ssl_options = {
+        :private_key_file => ssl_key_path,
+        :cert_chain_file => ssl_cert_path,
+        :verify_peer => false
+      }
+      
+      EventMachine.start_server('0.0.0.0', 9292, WebSocketConnection, game_server, ssl_options)
+      puts "🔒 Secure WebSocket server running on wss://0.0.0.0:9292"
+      puts "📜 Using SSL certificates from Let's Encrypt"
+    else
+      # Fallback to non-secure server
+      EventMachine.start_server('0.0.0.0', 9292, WebSocketConnection, game_server)
+      puts "⚠️  SSL certificates not found, running non-secure WebSocket server"
+      puts "🚀 WebSocket server running on ws://0.0.0.0:9292"
+    end
+    
     puts "Press Ctrl+C to stop"
   end
 end
