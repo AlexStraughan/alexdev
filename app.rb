@@ -170,9 +170,9 @@ get '/api/generators' do
     ]
     
     { generators: generators }.to_json
-  end
+end
 
-  get '/api/upgrades' do
+get '/api/upgrades' do
     content_type :json
     upgrades = [
       # Junior Developer Upgrades
@@ -495,10 +495,10 @@ get '/api/generators' do
     ]
     
     { upgrades: upgrades }.to_json
-  end
+end
 
-  # Leaderboard endpoints
-  get '/api/leaderboard' do
+# Leaderboard endpoints
+get '/api/leaderboard' do
     content_type :json
     
     begin
@@ -527,7 +527,7 @@ get '/api/generators' do
     end
   end
 
-  post '/api/submit_score' do
+post '/api/submit_score' do
     content_type :json
     
     begin
@@ -597,7 +597,7 @@ get '/api/generators' do
 
 
   # Player tracking endpoints - Available in all environments
-  post '/api/player-activity' do
+post '/api/player-activity' do
     content_type :json
     
     begin
@@ -632,7 +632,7 @@ get '/api/generators' do
     end
   end
 
-  get '/api/active-players' do
+get '/api/active-players' do
     content_type :json
     
     # Remove inactive players
@@ -661,7 +661,7 @@ get '/api/generators' do
 
   # Game State API Endpoints
   # GET /api/game-state/:player_id - Get player's game state
-  get '/api/game-state/:player_id' do
+get '/api/game-state/:player_id' do
     content_type :json
     
     begin
@@ -721,7 +721,7 @@ get '/api/generators' do
   end
 
   # POST /api/game-state/:player_id - Update player's game state
-  post '/api/game-state/:player_id' do
+post '/api/game-state/:player_id' do
     content_type :json
     
     begin
@@ -791,7 +791,7 @@ get '/api/generators' do
   end
 
   # Admin endpoint to get all players for console management
-  get '/api/admin/players' do
+get '/api/admin/players' do
     content_type :json
     
     begin
@@ -819,7 +819,7 @@ get '/api/generators' do
   end
 
   # Admin endpoint to modify player state
-  post '/api/admin/player/:player_id' do
+post '/api/admin/player/:player_id' do
     content_type :json
     
     begin
@@ -891,7 +891,7 @@ get '/api/generators' do
   end
 
   # Chat endpoints
-  post '/api/chat-message' do
+post '/api/chat-message' do
     content_type :json
     
     begin
@@ -934,7 +934,7 @@ get '/api/generators' do
     end
   end
 
-  get '/api/chat-messages' do
+get '/api/chat-messages' do
     content_type :json
     
     begin
@@ -965,7 +965,7 @@ get '/api/generators' do
   end
 
   # Offline save endpoint for sendBeacon API
-  post '/api/save-offline' do
+post '/api/save-offline' do
     content_type :json
     
     begin
