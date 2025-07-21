@@ -10,6 +10,10 @@ class App {
     async initialize() {
         console.log('App initializing...');
         
+        // Initialize WebSocket client first
+        window.wsClient = new GameWebSocketClient();
+        console.log('WebSocket client initialized');
+        
         // Initialize all systems
         this.effects = new Effects();
         console.log('Effects initialized');

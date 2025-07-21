@@ -17,13 +17,8 @@ class PlayerTracker {
     }
     
     checkIfPlayerIsTracked() {
-        // Check if player has already submitted to leaderboard
-        const scoreSubmitted = localStorage.getItem('scoreSubmitted') === 'true';
-        const playerName = localStorage.getItem('playerName');
-        
-        if (scoreSubmitted && playerName) {
-            this.enableTracking(playerName);
-        }
+        // Don't auto-start tracking - wait for registration
+        console.log('Player tracker initialized - waiting for registration');
     }
     
     enableTracking(playerName) {
@@ -49,20 +44,21 @@ class PlayerTracker {
     }
     
     getOrCreatePlayerId() {
-        let playerId = localStorage.getItem('playerId');
-        if (!playerId) {
-            playerId = 'player_' + Math.random().toString(36).substring(2, 15) + 
-                      Math.random().toString(36).substring(2, 15);
-            localStorage.setItem('playerId', playerId);
+        // Use the game's player ID if available
+        if (window.game && window.game.playerId) {
+            return window.game.playerId;
         }
-        return playerId;
+        
+        // Fallback to generating a temporary ID
+        return 'temp_' + Math.random().toString(36).substring(2, 15) + 
+               Math.random().toString(36).substring(2, 15);
     }
     
     // Remove the getOrCreatePlayerName method since names come from leaderboard submission
     
     setPlayerName(name) {
         this.playerName = name;
-        localStorage.setItem('playerName', name);
+        // Don't use localStorage anymore
         
         // Enable tracking when player sets name (via leaderboard submission)
         if (!this.isTracking) {

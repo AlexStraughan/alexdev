@@ -129,6 +129,28 @@ DB.execute <<-SQL
   );
 SQL
 
+# Create game state table for server-side persistence
+DB.execute <<-SQL
+  CREATE TABLE IF NOT EXISTS game_states (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_id TEXT UNIQUE,
+    player_name TEXT,
+    points INTEGER DEFAULT 0,
+    total_clicks INTEGER DEFAULT 0,
+    total_points_earned INTEGER DEFAULT 0,
+    click_power INTEGER DEFAULT 1,
+    crit_chance INTEGER DEFAULT 0,
+    crit_multiplier INTEGER DEFAULT 2,
+    generators TEXT DEFAULT '{}',
+    upgrades TEXT DEFAULT '{}',
+    achievements TEXT DEFAULT '[]',
+    game_hub_revealed BOOLEAN DEFAULT FALSE,
+    upgrades_tab_unlocked BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+SQL
+
 # POST /submit_score { name: "Player", score: 1000 }
 post '/submit_score' do
   data = JSON.parse(request.body.read)
@@ -220,6 +242,222 @@ get '/active-players' do
     end,
     count: ACTIVE_PLAYERS.size
   }.to_json
+end
+
+# Game State API Endpoints
+# GET /game-state/:player_id - Get player's game state
+get '/game-state/:player_id' do
+  content_type :json
+  
+  begin
+    player_id = params[:player_id]
+    return { error: 'Invalid player ID' }.to_json if player_id.nil? || player_id.strip.empty?
+    
+    # Get game state from database
+    result = DB.execute("SELECT * FROM game_states WHERE player_id = ? LIMIT 1", [player_id])
+    
+    if result.empty?
+      # Return default state for new players
+      default_state = {
+        player_id: player_id,
+        points: 0,
+        total_clicks: 0,
+        total_points_earned: 0,
+        click_power: 1,
+        crit_chance: 0,
+        crit_multiplier: 2,
+        generators: {},
+        upgrades: {},
+        achievements: [],
+        game_hub_revealed: false,
+        upgrades_tab_unlocked: false
+      }
+      
+      { success: true, state: default_state }.to_json
+    else
+      # Parse existing state
+      row = result[0]
+      state = {
+        player_id: row[1],
+        player_name: row[2],
+        points: row[3],
+        total_clicks: row[4],
+        total_points_earned: row[5],
+        click_power: row[6],
+        crit_chance: row[7],
+        crit_multiplier: row[8],
+        generators: JSON.parse(row[9] || '{}'),
+        upgrades: JSON.parse(row[10] || '{}'),
+        achievements: JSON.parse(row[11] || '[]'),
+        game_hub_revealed: row[12] == 1,
+        upgrades_tab_unlocked: row[13] == 1
+      }
+      
+      { success: true, state: state }.to_json
+    end
+  rescue => e
+    status 500
+    { error: "Error fetching game state: #{e.message}" }.to_json
+  end
+end
+
+# POST /game-state/:player_id - Update player's game state
+post '/game-state/:player_id' do
+  content_type :json
+  
+  begin
+    request.body.rewind
+    data = JSON.parse(request.body.read)
+    
+    player_id = params[:player_id]
+    return { error: 'Invalid player ID' }.to_json if player_id.nil? || player_id.strip.empty?
+    
+    # Extract state data
+    state = data['state']
+    return { error: 'Invalid state data' }.to_json unless state.is_a?(Hash)
+    
+    # Check if player exists
+    existing = DB.execute("SELECT id FROM game_states WHERE player_id = ? LIMIT 1", [player_id])
+    
+    if existing.empty?
+      # Insert new player state
+      DB.execute(
+        "INSERT INTO game_states (player_id, player_name, points, total_clicks, total_points_earned, click_power, crit_chance, crit_multiplier, generators, upgrades, achievements, game_hub_revealed, upgrades_tab_unlocked) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [
+          player_id,
+          state['player_name'],
+          state['points'] || 0,
+          state['total_clicks'] || 0,
+          state['total_points_earned'] || 0,
+          state['click_power'] || 1,
+          state['crit_chance'] || 0,
+          state['crit_multiplier'] || 2,
+          JSON.generate(state['generators'] || {}),
+          JSON.generate(state['upgrades'] || {}),
+          JSON.generate(state['achievements'] || []),
+          state['game_hub_revealed'] ? 1 : 0,
+          state['upgrades_tab_unlocked'] ? 1 : 0
+        ]
+      )
+    else
+      # Update existing player state
+      DB.execute(
+        "UPDATE game_states SET player_name = ?, points = ?, total_clicks = ?, total_points_earned = ?, click_power = ?, crit_chance = ?, crit_multiplier = ?, generators = ?, upgrades = ?, achievements = ?, game_hub_revealed = ?, upgrades_tab_unlocked = ?, updated_at = CURRENT_TIMESTAMP WHERE player_id = ?",
+        [
+          state['player_name'],
+          state['points'] || 0,
+          state['total_clicks'] || 0,
+          state['total_points_earned'] || 0,
+          state['click_power'] || 1,
+          state['crit_chance'] || 0,
+          state['crit_multiplier'] || 2,
+          JSON.generate(state['generators'] || {}),
+          JSON.generate(state['upgrades'] || {}),
+          JSON.generate(state['achievements'] || []),
+          state['game_hub_revealed'] ? 1 : 0,
+          state['upgrades_tab_unlocked'] ? 1 : 0,
+          player_id
+        ]
+      )
+    end
+    
+    { success: true }.to_json
+  rescue => e
+    status 500
+    { error: "Error saving game state: #{e.message}" }.to_json
+  end
+end
+
+# Admin endpoint to get all players for console management
+get '/admin/players' do
+  content_type :json
+  
+  begin
+    players = DB.execute("SELECT player_id, player_name, points, total_clicks, generators, upgrades, updated_at FROM game_states ORDER BY points DESC")
+    
+    {
+      players: players.map do |row|
+        {
+          player_id: row[0],
+          player_name: row[1],
+          points: row[2],
+          total_clicks: row[3],
+          generators: JSON.parse(row[4] || '{}'),
+          upgrades: JSON.parse(row[5] || '{}'),
+          updated_at: row[6]
+        }
+      end
+    }.to_json
+  rescue => e
+    status 500
+    { error: "Error fetching players: #{e.message}" }.to_json
+  end
+end
+
+# Admin endpoint to modify player state
+post '/admin/player/:player_id' do
+  content_type :json
+  
+  begin
+    request.body.rewind
+    data = JSON.parse(request.body.read)
+    
+    player_id = params[:player_id]
+    return { error: 'Invalid player ID' }.to_json if player_id.nil? || player_id.strip.empty?
+    
+    # Build update query dynamically based on provided fields
+    updates = []
+    values = []
+    
+    if data['points']
+      updates << "points = ?"
+      values << data['points']
+    end
+    
+    if data['add_generator']
+      # Get current generators
+      current = DB.execute("SELECT generators FROM game_states WHERE player_id = ? LIMIT 1", [player_id])
+      if current.empty?
+        return { error: 'Player not found' }.to_json
+      end
+      
+      generators = JSON.parse(current[0][0] || '{}')
+      generators[data['add_generator']] = (generators[data['add_generator']] || 0) + (data['generator_count'] || 1)
+      
+      updates << "generators = ?"
+      values << JSON.generate(generators)
+    end
+    
+    if data['add_upgrade']
+      # Get current upgrades
+      current = DB.execute("SELECT upgrades FROM game_states WHERE player_id = ? LIMIT 1", [player_id])
+      if current.empty?
+        return { error: 'Player not found' }.to_json
+      end
+      
+      upgrades = JSON.parse(current[0][0] || '{}')
+      upgrades[data['add_upgrade']] = true
+      
+      updates << "upgrades = ?"
+      values << JSON.generate(upgrades)
+    end
+    
+    if updates.empty?
+      return { error: 'No valid updates provided' }.to_json
+    end
+    
+    # Add updated timestamp
+    updates << "updated_at = CURRENT_TIMESTAMP"
+    values << player_id
+    
+    # Execute update
+    DB.execute("UPDATE game_states SET #{updates.join(', ')} WHERE player_id = ?", values)
+    
+    { success: true }.to_json
+  rescue => e
+    status 500
+    { error: "Error updating player: #{e.message}" }.to_json
+  end
 end
 
 # Chat endpoints

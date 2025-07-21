@@ -25,19 +25,9 @@ class ChatSystem {
         }
         
         try {
-            const response = await fetch('/api/chat-message', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    player_id: this.currentPlayerId,
-                    message: message.trim()
-                })
-            });
-            
-            const data = await response.json();
-            return data;
+            // Send via WebSocket
+            window.wsClient.sendChatMessage(message.trim());
+            return { success: true };
         } catch (error) {
             console.error('Error sending message:', error);
             return { success: false, error: 'Failed to send message' };

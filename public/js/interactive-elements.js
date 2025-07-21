@@ -1,7 +1,7 @@
 // Interactive elements for social media links and score submission
 // Requires FloatingElement to be loaded first
 
-// Base class for interactive elements (LinkedIn, GitHub, etc.)
+// Base class for interactive elements (LinkedIn, GitHub, Twitter, Portfolio, etc.)
 class InteractiveElement extends FloatingElement {
     constructor(type, x, y) {
         super('🔗', x, y, 'medium'); // Placeholder emoji
@@ -139,12 +139,12 @@ class InteractiveElement extends FloatingElement {
     }
 
     getSubmitScoreContent() {
-        const playerName = localStorage.getItem('playerName');
-        const scoreSubmitted = localStorage.getItem('scoreSubmitted') === 'true';
+        // Check if user is registered via game state
+        const isRegistered = window.game && window.game.isRegistered;
         
-        if (scoreSubmitted && playerName) {
+        if (isRegistered) {
             // Show player name with a different style (max 10 characters)
-            const displayName = playerName.length > 10 ? playerName.substring(0, 10) : playerName;
+            const displayName = window.game.playerName.length > 10 ? window.game.playerName.substring(0, 10) : window.game.playerName;
             return `<span style="font-family: Arial, sans-serif; font-weight: bold; color: white; background: #10b981; padding: 0.2em 0.3em; border-radius: 0.1em; font-size: 0.7em; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block;">${displayName}</span>`;
         } else {
             // Show submit score button
@@ -153,22 +153,22 @@ class InteractiveElement extends FloatingElement {
     }
 
     getSubmitScoreFilter() {
-        const scoreSubmitted = localStorage.getItem('scoreSubmitted') === 'true';
-        return scoreSubmitted 
+        const isRegistered = window.game && window.game.isRegistered;
+        return isRegistered 
             ? 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.6))'
             : 'drop-shadow(0 0 10px rgba(79, 172, 254, 0.6))';
     }
 
     getSubmitScoreHoverFilter() {
-        const scoreSubmitted = localStorage.getItem('scoreSubmitted') === 'true';
-        return scoreSubmitted 
+        const isRegistered = window.game && window.game.isRegistered;
+        return isRegistered 
             ? 'drop-shadow(0 0 15px rgba(16, 185, 129, 0.8))'
             : 'drop-shadow(0 0 15px rgba(79, 172, 254, 0.8))';
     }
 
     getSubmitScoreClickFilter() {
-        const scoreSubmitted = localStorage.getItem('scoreSubmitted') === 'true';
-        return scoreSubmitted 
+        const isRegistered = window.game && window.game.isRegistered;
+        return isRegistered 
             ? 'drop-shadow(0 0 20px rgba(16, 185, 129, 1))'
             : 'drop-shadow(0 0 20px rgba(79, 172, 254, 1))';
     }
@@ -202,20 +202,15 @@ class InteractiveElement extends FloatingElement {
     }
     
     async handleSubmitScore() {
-        let playerName = localStorage.getItem('playerName');
-        let scoreSubmitted = localStorage.getItem('scoreSubmitted') === 'true';
-        
-        // If already submitted, show info message instead
-        if (scoreSubmitted && playerName) {
-            alert(`Score tracking is active for ${playerName}. Your high score is automatically updated every 5 minutes!`);
+        // Check if user is already registered
+        if (window.game && window.game.isRegistered) {
+            alert(`Score tracking is active for ${window.game.playerName}. Your high score is automatically updated every 5 minutes!`);
             return;
         }
         
-        if (!playerName) {
-            playerName = prompt('Enter your name for the leaderboard:');
-            if (!playerName || playerName.trim().length < 1) return;
-            localStorage.setItem('playerName', playerName);
-        }
+        // Get player name
+        const playerName = prompt('Enter your name for the leaderboard:');
+        if (!playerName || playerName.trim().length < 1) return;
         
         // Get score from game state
         let score = 0;
@@ -236,19 +231,15 @@ class InteractiveElement extends FloatingElement {
                 body: JSON.stringify({ name: playerName, score: score })
             });
             
-            if (!scoreSubmitted) {
-                localStorage.setItem('scoreSubmitted', 'true');
-                this.startPeriodicScoreUpdate(playerName);
-                // Update the element appearance
-                this.updateSubmitScoreElement();
-                
-                // Enable player tracking now that they've submitted to leaderboard
-                if (window.playerTracker) {
-                    window.playerTracker.enableTracking(playerName);
-                }
+            // Register the user in the game system
+            if (window.game) {
+                await window.game.registerUser(playerName);
             }
             
-            alert('Score submitted! You are now being tracked automatically every 5 minutes.');
+            // Update the element appearance
+            this.updateSubmitScoreElement();
+            
+            alert('Score submitted! You are now registered and your progress is being tracked automatically.');
         } catch (err) {
             alert('Failed to submit score.');
         }

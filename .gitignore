@@ -1,2 +1,43 @@
+# Database files
 server/leaderboard.db
 leaderboard.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables (contains secrets)
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs
+*.log
+logs/
+
+# Runtime files
+*.pid
+*.seed
+
+# Dependencies
+node_modules/
+vendor/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/
