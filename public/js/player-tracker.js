@@ -31,11 +31,13 @@ class PlayerTracker {
         
         console.log(`Player tracking enabled for: ${playerName}`);
         
-        // Send initial activity update with current game data
-        console.log('📊 Getting game data for initial activity update...');
-        const gameData = this.getGameData();
-        console.log('📊 Initial game data retrieved:', gameData);
-        this.updatePlayerActivity(gameData);
+        // Delay initial activity update to avoid blocking startup
+        setTimeout(() => {
+            console.log('📊 Getting game data for delayed initial activity update...');
+            const gameData = this.getGameData();
+            console.log('📊 Initial game data retrieved:', gameData);
+            this.updatePlayerActivity(gameData);
+        }, 1000);
         
         this.startHeartbeat();
     }

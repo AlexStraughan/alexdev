@@ -31,59 +31,89 @@ class App {
                 });
             }
             
-            // Timeout after 5 seconds if connection fails
+            // Timeout after 1 second if connection fails (reduced for faster startup)
             setTimeout(() => {
                 console.warn('⚠️ WebSocket connection timeout, continuing anyway...');
                 document.removeEventListener('websocketReady', handleWebSocketReady);
                 resolve();
-            }, 5000);
+            }, 1000);
         });
     }
 
     async initialize() {
         console.log('App initializing...');
+        window.perfMonitor?.mark('app_init_start');
         
-        // Wait for WebSocket client to be ready
-        await this.waitForWebSocketReady();
-        console.log('WebSocket client ready');
-        
-        // Initialize all systems
-        this.effects = new Effects();
-        console.log('Effects initialized');
-        
+        // Initialize core systems first for immediate usability
         this.ui = new UI();
+        window.perfMonitor?.mark('ui_initialized');
         console.log('UI initialized');
         
-        this.physics = new Physics();
-        console.log('Physics initialized');
-        
         this.game = new Game();
+        window.perfMonitor?.mark('game_created');
         console.log('Game initialized');
 
-        // Make them globally available for cross-system communication
+        // Make them globally available
         window.game = this.game;
-        window.physics = this.physics;
         window.ui = this.ui;
-        window.effects = this.effects;
 
-        // Initialize the game
+        // Initialize the game system first
         await this.game.initialize();
+        window.perfMonitor?.mark('game_initialized');
         console.log('Game system initialized');
 
-        // Start physics simulation
-        this.physics.start();
-        console.log('Physics started');
-
+        // Set up click handler for immediate interaction
+        this.setupClickHandler();
+        window.perfMonitor?.mark('click_handler_setup');
+        
         // Initialize page fade-in effect
         this.ui.initializePageFadeIn();
+        window.perfMonitor?.mark('page_fade_setup');
 
-        // Set up click handler for the main clicker
-        this.setupClickHandler();
+        // Load heavy systems in the background after core functionality is ready
+        this.initializeBackgroundSystems();
         
-        // Set up debug reset button
-        this.setupDebugReset();
-        
-        console.log('App initialization complete');
+        console.log('App core initialization complete - background systems loading...');
+    }
+
+    async initializeBackgroundSystems() {
+        // Use setTimeout to allow the main thread to breathe
+        setTimeout(async () => {
+            try {
+                window.perfMonitor?.mark('background_init_start');
+                
+                // Wait for WebSocket but don't block core functionality
+                await this.waitForWebSocketReady();
+                window.perfMonitor?.mark('websocket_connected');
+                console.log('WebSocket client ready');
+
+                // Initialize effects (lightweight)
+                this.effects = new Effects();
+                window.effects = this.effects;
+                window.perfMonitor?.mark('effects_initialized');
+                console.log('Effects initialized');
+
+                // Initialize physics last as it's the heaviest
+                setTimeout(() => {
+                    this.physics = new Physics();
+                    window.physics = this.physics;
+                    window.perfMonitor?.mark('physics_created');
+                    console.log('Physics initialized');
+                    
+                    // Start physics with reduced elements on slower connections
+                    this.physics.start();
+                    window.perfMonitor?.mark('physics_started');
+                    console.log('Physics started');
+                }, 100);
+
+                // Set up debug reset button
+                this.setupDebugReset();
+                
+                console.log('Background systems initialization complete');
+            } catch (error) {
+                console.error('Error initializing background systems:', error);
+            }
+        }, 10);
     }
 
     setupClickHandler() {

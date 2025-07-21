@@ -141,7 +141,7 @@ class Physics {
     createFloatingElements() {
         // Reduce console logging for performance
         // console.log('Creating floating elements...');
-        const numElements = 40; // Reduced slightly for better performance
+        const numElements = 20; // Reduced significantly for faster startup
         
         // Get actual viewport dimensions
         const viewportWidth = window.innerWidth;
@@ -164,7 +164,7 @@ class Physics {
         }
         // console.log('Created', numInteractive, 'interactive elements');
         
-        // Create regular floating elements
+        // Create regular floating elements (reduced count)
         for (let i = 0; i < numElements; i++) {
             const emoji = this.emojis[Math.floor(Math.random() * this.emojis.length)];
             
@@ -180,7 +180,30 @@ class Physics {
             this.elements.push(new FloatingElement(emoji, x, y, size));
         }
         
+        // Add more elements gradually after initial load
+        setTimeout(() => this.addMoreElements(), 2000);
+        
         // console.log('Created', this.elements.length, 'total floating elements');
+    }
+
+    addMoreElements() {
+        // Add more elements gradually to improve perceived performance
+        const additionalElements = 20; // Add 20 more after 2 seconds
+        
+        for (let i = 0; i < additionalElements; i++) {
+            const emoji = this.emojis[Math.floor(Math.random() * this.emojis.length)];
+            
+            const margin = 100;
+            const x = margin + Math.random() * (window.innerWidth - 2 * margin);
+            const y = margin + Math.random() * (window.innerHeight - 2 * margin);
+            
+            const sizeRand = Math.random();
+            const size = sizeRand < 0.15 ? 'large' : sizeRand < 0.7 ? 'medium' : 'small';
+            
+            this.elements.push(new FloatingElement(emoji, x, y, size));
+        }
+        
+        console.log('Added more elements, total:', this.elements.length);
     }
     
     // Animation loop with frame rate control

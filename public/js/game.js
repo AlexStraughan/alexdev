@@ -721,7 +721,7 @@ class Game {
                             console.log('⏰ Game state load timeout, using default state');
                             resolve();
                         }
-                    }, 3000); // 3 second timeout
+                    }, 1000); // 1 second timeout for faster startup
                 };
 
                 // Check if WebSocket is already connected
@@ -745,7 +745,7 @@ class Game {
                             console.log('⏰ WebSocket connection timeout, using default state');
                             resolve();
                         }
-                    }, 5000); // 5 second timeout
+                    }, 2000); // 2 second timeout for faster startup
                 }
             });
         } catch (error) {
@@ -859,8 +859,8 @@ class Game {
         await this.loadGameState();
         await this.loadGenerators();
         
-        // Load greetings cache on startup
-        await this.loadGreetings();
+        // Load greetings cache in background (non-blocking)
+        setTimeout(() => this.loadGreetings(), 500);
         
         this.calculatePointsPerSecond();
         this.updateDisplay();
