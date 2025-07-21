@@ -1014,9 +1014,9 @@ if __FILE__ == $0
     Signal.trap('INT') { EventMachine.stop }
     Signal.trap('TERM') { EventMachine.stop }
     
-    EventMachine.start_server('127.0.0.1', 9292, WebSocketConnection, game_server)
+    EventMachine.start_server('0.0.0.0', 9292, WebSocketConnection, game_server)
     
-    puts "🚀 WebSocket server running on ws://127.0.0.1:9292"
+    puts "🚀 WebSocket server running on ws://0.0.0.0:9292"
     puts "Press Ctrl+C to stop"
   end
 end
