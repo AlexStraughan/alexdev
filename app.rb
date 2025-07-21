@@ -22,9 +22,18 @@ CHAT_MESSAGES = []
 MAX_CHAT_MESSAGES = 50
 CHAT_MESSAGE_TIMEOUT = 300 # 5 minutes
 
-# Development API endpoints (only in development)
-if development?
-  # CORS headers for development
+# CORS headers for API endpoints
+before '/api/*' do
+  response.headers['Access-Control-Allow-Origin'] = '*'
+  response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+  response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+end
+
+options '/api/*' do
+  200
+end
+
+# Game API endpoints
   before '/api/*' do
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
@@ -1041,8 +1050,6 @@ if development?
       { error: "Offline save error: #{e.message}" }.to_json
     end
   end
-
-end
 
 # Homepage route
 get '/' do
