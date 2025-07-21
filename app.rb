@@ -8,7 +8,7 @@ require 'securerandom'
 
 # Configure Sinatra
 configure do
-  set :port, ENV['PORT'] || 4567
+  set :port, ENV['PORT'] || 4568
   set :bind, '0.0.0.0'
   enable :sessions
 end
