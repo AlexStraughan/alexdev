@@ -822,8 +822,20 @@ class Game {
                 offline_earnings_rate: this.state.offlineEarningsRate
             };
             
-            window.wsClient.saveGameState(this.playerId, stateToSave);
-            console.log('Game state save requested via WebSocket');
+            // Check if WebSocket client is available and connected
+            if (window.wsClient && window.wsClient.isConnected) {
+                window.wsClient.saveGameState(this.playerId, stateToSave);
+                console.log('Game state save requested via WebSocket');
+            } else {
+                console.log('WebSocket not available for game state save - will retry when connected');
+                // Queue the save for when WebSocket becomes available
+                if (window.wsClient) {
+                    window.wsClient.on('connected', () => {
+                        console.log('WebSocket connected, saving queued game state');
+                        window.wsClient.saveGameState(this.playerId, stateToSave);
+                    });
+                }
+            }
         } catch (error) {
             console.error('Error saving game state:', error);
         }
@@ -840,7 +852,18 @@ class Game {
         console.log('💾 Saved player name to localStorage:', playerName);
         
         // Register via WebSocket
-        window.wsClient.registerPlayer(playerName);
+        if (window.wsClient && window.wsClient.isConnected) {
+            window.wsClient.registerPlayer(playerName);
+        } else {
+            console.log('WebSocket not ready for player registration - will register when connected');
+            // Queue registration for when WebSocket becomes available
+            if (window.wsClient) {
+                window.wsClient.on('connected', () => {
+                    console.log('WebSocket connected, registering queued player');
+                    window.wsClient.registerPlayer(playerName);
+                });
+            }
+        }
         
         // Enable player tracking
         if (window.playerTracker) {
@@ -1193,8 +1216,13 @@ class Game {
         // Track when user leaves the tab/window
         const updateLastActiveTime = () => {
             this.state.lastActiveTime = Date.now();
-            this.saveGameState();
-            console.log('📴 User inactive - saved last active time');
+            // Only save if WebSocket is available to avoid errors
+            if (window.wsClient && window.wsClient.isConnected) {
+                this.saveGameState();
+                console.log('📴 User inactive - saved last active time');
+            } else {
+                console.log('📴 User inactive - time recorded but no WebSocket to save');
+            }
         };
         
         // Track when user returns to the tab/window

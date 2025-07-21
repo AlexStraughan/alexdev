@@ -43,7 +43,13 @@ class GameWebSocketClient {
                 this.ws = null;
             }
             
-            this.ws = new WebSocket('ws://127.0.0.1:9292');
+            // Use the current hostname for WebSocket connection
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
+            const wsUrl = `${protocol}//${hostname}:9292`;
+            
+            console.log(`🔌 Connecting to WebSocket at: ${wsUrl}`);
+            this.ws = new WebSocket(wsUrl);
             
             this.ws.onopen = (event) => {
                 console.log('🔌 WebSocket connected successfully');
