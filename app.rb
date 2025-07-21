@@ -166,7 +166,7 @@ if development?
         baseCost: 330000000000000,
         baseProduction: 58000000,
         description: "Me on an average wednesday tbh",
-        icon: "�",
+        icon: "🌌",
         unlockCondition: { type: "generator_owned", generator: "god_algorithm", count: 1 }
       }
     ]
@@ -507,11 +507,24 @@ if development?
       db = SQLite3::Database.new('leaderboard.db')
       db.results_as_hash = true
       
-      scores = db.execute('SELECT name, score FROM scores ORDER BY score DESC LIMIT 10')
+      # Get players from game_states table, ordered by total_points_earned
+      players = db.execute('SELECT player_name, total_points_earned, total_clicks, generators, upgrades, updated_at FROM game_states WHERE player_name IS NOT NULL ORDER BY total_points_earned DESC LIMIT 10')
       db.close
       
-      { leaderboard: scores }.to_json
-    rescue
+      leaderboard = players.map do |row|
+        {
+          name: row['player_name'],
+          score: row['total_points_earned'],
+          total_clicks: row['total_clicks'],
+          generators: JSON.parse(row['generators'] || '{}'),
+          upgrades: JSON.parse(row['upgrades'] || '{}'),
+          updated_at: row['updated_at']
+        }
+      end
+      
+      { leaderboard: leaderboard }.to_json
+    rescue => e
+      puts "❌ Leaderboard error: #{e.message}"
       { leaderboard: [] }.to_json
     end
   end
@@ -533,14 +546,6 @@ if development?
       
       # Initialize database if it doesn't exist
       db = SQLite3::Database.new('leaderboard.db')
-      db.execute <<-SQL
-        CREATE TABLE IF NOT EXISTS scores (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT,
-          score INTEGER,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
-      SQL
       
       # Create game state table for server-side persistence
       db.execute <<-SQL
@@ -559,18 +564,20 @@ if development?
           achievements TEXT DEFAULT '[]',
           game_hub_revealed BOOLEAN DEFAULT FALSE,
           upgrades_tab_unlocked BOOLEAN DEFAULT FALSE,
+          last_active_time INTEGER DEFAULT 0,
+          offline_earnings_rate REAL DEFAULT 0.4,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
       SQL
       
-      # Check if player exists
-      existing = db.execute('SELECT score FROM scores WHERE name = ?', [name]).first
+      # Check if player exists by name (for leaderboard submission)
+      existing = db.execute('SELECT total_points_earned FROM game_states WHERE player_name = ?', [name]).first
       
       if existing
         # Update only if new score is higher
         if score > existing[0]
-          db.execute('UPDATE scores SET score = ? WHERE name = ?', [score, name])
+          db.execute('UPDATE game_states SET total_points_earned = ?, updated_at = CURRENT_TIMESTAMP WHERE player_name = ?', [score, name])
           db.close
           { success: true, message: 'High score updated!' }.to_json
         else
@@ -578,8 +585,9 @@ if development?
           { success: false, message: 'Score not higher than existing record' }.to_json
         end
       else
-        # Insert new player
-        db.execute('INSERT INTO scores (name, score) VALUES (?, ?)', [name, score])
+        # Insert new player with generated ID
+        player_id = SecureRandom.uuid
+        db.execute('INSERT INTO game_states (player_id, player_name, total_points_earned) VALUES (?, ?, ?)', [player_id, name, score])
         db.close
         { success: true, message: 'Score submitted successfully!' }.to_json
       end

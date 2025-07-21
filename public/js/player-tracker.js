@@ -7,6 +7,8 @@ class PlayerTracker {
         this.updateInterval = null;
         this.isActive = false;
         this.isTracking = false;
+        this.lastDisplayUpdate = 0;
+        this.displayUpdateThrottle = 30000; // 30 seconds
         
         this.init();
     }
@@ -28,6 +30,13 @@ class PlayerTracker {
         this.isActive = true;
         
         console.log(`Player tracking enabled for: ${playerName}`);
+        
+        // Send initial activity update with current game data
+        console.log('📊 Getting game data for initial activity update...');
+        const gameData = this.getGameData();
+        console.log('📊 Initial game data retrieved:', gameData);
+        this.updatePlayerActivity(gameData);
+        
         this.startHeartbeat();
     }
     
@@ -69,10 +78,12 @@ class PlayerTracker {
     async updatePlayerActivity(gameData = {}) {
         if (!this.isActive || !this.isTracking) return;
         
+        console.log('📊 updatePlayerActivity called with gameData:', gameData);
+        
         try {
             // Use WebSocket if available, fallback to HTTP
             if (window.wsClient && window.wsClient.isConnected) {
-                window.wsClient.send({
+                const activityMessage = {
                     type: 'player_activity',
                     player_id: this.playerId,
                     player_name: this.playerName,
@@ -80,7 +91,9 @@ class PlayerTracker {
                     level: gameData.level || 1,
                     points_per_second: gameData.pointsPerSecond || 0,
                     generators_owned: gameData.generatorsOwned || 0
-                });
+                };
+                console.log('📊 Sending player_activity message:', activityMessage);
+                window.wsClient.send(activityMessage);
                 this.lastActivityUpdate = Date.now();
                 return { success: true };
             } else {
@@ -129,12 +142,19 @@ class PlayerTracker {
             const totalGenerators = Object.values(window.game.state.generators)
                 .reduce((sum, count) => sum + count, 0);
             
-            return {
+            const gameData = {
                 score: Math.floor(window.game.state.totalPointsEarned || window.game.state.points || 0),
                 pointsPerSecond: window.game.state.pointsPerSecond || 0,
                 generatorsOwned: totalGenerators
             };
+            
+            console.log('📊 Player tracker game data:', gameData);
+            console.log('📊 Raw totalPointsEarned:', window.game.state.totalPointsEarned);
+            console.log('📊 Raw points:', window.game.state.points);
+            
+            return gameData;
         }
+        console.log('📊 No game state available for player tracker');
         return {};
     }
     
@@ -208,50 +228,77 @@ class PlayerTracker {
     }
     
     updateActivePlayersDisplay(players) {
-        // Update the active players display in the UI
-        const activePlayersElement = document.getElementById('activePlayers');
-        if (activePlayersElement && Array.isArray(players)) {
+        // Throttle display updates to reduce console spam and DOM updates
+        const currentTime = Date.now();
+        if (currentTime - this.lastDisplayUpdate < this.displayUpdateThrottle) {
+            console.log(`👥 Display update throttled (${Math.floor((this.displayUpdateThrottle - (currentTime - this.lastDisplayUpdate)) / 1000)}s remaining)`);
+            return;
+        }
+        
+        this.lastDisplayUpdate = currentTime;
+        console.log('👥 Updating live players display with:', players);
+        
+        if (Array.isArray(players)) {
             const playersHtml = players.map(player => {
-                const isCurrentPlayer = player.player_id === this.playerId;
+                // Check both player ID and name to identify current player - BOTH must match
+                const isCurrentPlayer = this.playerId && this.playerName && 
+                                      (player.player_id === this.playerId) && 
+                                      (player.player_name === this.playerName);
                 const playerClass = isCurrentPlayer ? 'current-player' : 'other-player';
+                console.log(`👥 Player: ${player.player_name}, ID: ${player.player_id}, Score: ${player.score}, Current: ${isCurrentPlayer}`);
                 return `
-                    <div class="active-player ${playerClass}" data-player-id="${player.player_id}">
-                        <span class="player-name">${player.player_name || 'Anonymous'}</span>
-                        <span class="player-score">${this.formatNumber(player.score || 0)} pts</span>
+                    <div class="active-player ${playerClass}" data-player-id="${player.player_id}" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5em 1em; margin: 0.5em 0; background: rgba(255,255,255,0.1); border-radius: 0.3em; ${isCurrentPlayer ? 'border-left: 3px solid #FFD700;' : ''}">
+                        <span class="player-name" style="font-weight: ${isCurrentPlayer ? 'bold' : 'normal'}; color: ${isCurrentPlayer ? '#FFD700' : 'inherit'};">${player.player_name || 'Anonymous'}${isCurrentPlayer ? ' (You)' : ''}</span>
+                        <span class="player-score" style="color: #4facfe;">${this.formatNumber(player.score || 0)} pts</span>
                     </div>
                 `;
             }).join('');
             
-            activePlayersElement.innerHTML = `
-                <h4>🌐 Active Players (${players.length})</h4>
-                ${playersHtml}
-            `;
+            // Update the live players section
+            const livePlayersElement = document.getElementById('livePlayersContent');
+            if (livePlayersElement) {
+                livePlayersElement.innerHTML = playersHtml || '<p style="color: rgba(255,255,255,0.6); font-style: italic;">No live players</p>';
+                console.log('👥 Live players HTML updated (throttled)');
+            } else {
+                console.log('👥 Live players element not found');
+            }
+        } else {
+            console.log('👥 Invalid players array');
         }
+    }
+
+    updateActivePlayersDisplayForce(players) {
+        // Force update without throttling (for important events like connect/disconnect)
+        this.lastDisplayUpdate = 0;  // Reset throttle
+        this.updateActivePlayersDisplay(players);
     }
     
     updateLeaderboardDisplay(leaderboard) {
-        // Update the leaderboard display in the UI
-        const leaderboardElement = document.getElementById('leaderboard');
-        if (leaderboardElement && Array.isArray(leaderboard)) {
+        // Update the leaderboard content display in the UI
+        const leaderboardContentElement = document.getElementById('leaderboardContent');
+        if (leaderboardContentElement && Array.isArray(leaderboard)) {
             const leaderboardHtml = leaderboard.map((player, index) => {
-                const isCurrentPlayer = player.player_id === this.playerId;
+                // Check both player ID and name to identify current player - BOTH must match
+                const isCurrentPlayer = this.playerId && this.playerName && 
+                                      (player.player_id === this.playerId) && 
+                                      (player.player_name === this.playerName);
                 const playerClass = isCurrentPlayer ? 'current-player' : 'other-player';
                 const rank = index + 1;
                 const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
                 
                 return `
-                    <div class="leaderboard-entry ${playerClass}">
-                        <span class="rank">${medal}</span>
-                        <span class="player-name">${player.player_name || 'Anonymous'}</span>
-                        <span class="player-score">${this.formatNumber(player.total_points_earned || 0)} pts</span>
+                    <div class="leaderboard-entry ${playerClass}" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5em 1em; margin: 0.5em 0; background: rgba(255,255,255,0.1); border-radius: 0.3em; ${isCurrentPlayer ? 'border-left: 3px solid #FFD700;' : ''}">
+                        <span class="rank" style="font-weight: bold; color: #4facfe;">${medal}</span>
+                        <span class="player-name" style="font-weight: ${isCurrentPlayer ? 'bold' : 'normal'}; color: ${isCurrentPlayer ? '#FFD700' : 'inherit'};">${player.player_name || 'Anonymous'}${isCurrentPlayer ? ' (You)' : ''}</span>
+                        <span class="player-score" style="color: #4CAF50;">${this.formatNumber(player.total_points_earned || 0)} pts</span>
                     </div>
                 `;
             }).join('');
             
-            leaderboardElement.innerHTML = `
-                <h4>🏆 Top Players</h4>
-                ${leaderboardHtml}
-            `;
+            leaderboardContentElement.innerHTML = leaderboardHtml || '<p style="color: rgba(255,255,255,0.6); font-style: italic;">No scores yet</p>';
+            console.log('🏆 Leaderboard content updated');
+        } else {
+            console.log('🏆 Leaderboard content element not found or invalid leaderboard data');
         }
     }
     

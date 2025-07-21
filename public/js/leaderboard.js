@@ -6,6 +6,7 @@ class Leaderboard {
         this.playerName = null;
         this.scoreSubmitted = false;
         this.callbackRegistered = false;
+        this.latestLeaderboardData = null; // Store latest data
         this.initializeUI();
         // Don't set up callbacks immediately, wait for WebSocket to be ready
     }
@@ -21,6 +22,7 @@ class Leaderboard {
             console.log('🏆 Setting up leaderboard callback - WebSocket is ready');
             window.wsClient.on('leaderboard_update', (message) => {
                 console.log('🏆 Leaderboard callback triggered with data:', message.leaderboard);
+                this.latestLeaderboardData = message.leaderboard; // Store the data
                 this.renderLeaderboard(message.leaderboard);
             });
             this.callbackRegistered = true;
@@ -37,36 +39,45 @@ class Leaderboard {
 
     // Fetch leaderboard data via WebSocket
     async fetchLeaderboardForTab() {
-        const content = document.getElementById('leaderboardContent');
-        if (!content) return;
+        // Use querySelector to find the element even if tab is hidden
+        const content = document.querySelector('#leaderboardContent');
+        if (!content) {
+            console.log('🏆 leaderboardContent not found in fetchLeaderboardForTab');
+            return;
+        }
         
         content.innerHTML = '<div style="text-align:center; padding:2em; color:rgba(255,255,255,0.8);">Loading...</div>';
+        
+        // If we have stored data, render it immediately
+        if (this.latestLeaderboardData) {
+            console.log('🏆 Rendering stored leaderboard data from fetchLeaderboardForTab');
+            this.renderLeaderboard(this.latestLeaderboardData);
+            return;
+        }
         
         // Make sure callback is set up before requesting data
         this.setupWebSocketCallbacks();
         
-        // Force save current game state to update the database with latest score
-        if (window.game && window.game.isRegistered) {
-            console.log('🏆 Forcing game state save before leaderboard refresh...');
-            await window.game.saveGameState();
+        // Force save and request fresh data
+        console.log('🏆 Forcing game state save before leaderboard refresh...');
+        if (window.game && window.game.saveGameState) {
+            // Use the game's save method which has all the proper parameters
+            window.game.saveGameState();
+        }
+        
+        // Small delay then request leaderboard
+        setTimeout(() => {
+            console.log('🏆 Requesting fresh leaderboard data...');
+            console.log('🏆 wsClient exists:', !!window.wsClient);
+            console.log('🏆 wsClient isConnected:', window.wsClient?.isConnected);
             
-            // Wait a moment for the save to complete
-            setTimeout(() => {
-                if (window.wsClient && window.wsClient.isConnected) {
-                    console.log('🏆 Requesting fresh leaderboard data...');
-                    window.wsClient.requestLeaderboard();
-                } else {
-                    content.innerHTML = '<div style="text-align:center; padding:2em; color:rgba(255,255,255,0.8);">WebSocket not connected</div>';
-                }
-            }, 200);
-        } else {
-            // If not registered, just request leaderboard normally
             if (window.wsClient && window.wsClient.isConnected) {
+                console.log('🏆 Calling wsClient.requestLeaderboard()...');
                 window.wsClient.requestLeaderboard();
             } else {
-                content.innerHTML = '<div style="text-align:center; padding:2em; color:rgba(255,255,255,0.8);">WebSocket not connected</div>';
+                console.error('🏆 wsClient not available or not connected!');
             }
-        }
+        }, 100);
     }
     
     formatLargeNumber(number) {
@@ -94,38 +105,107 @@ class Leaderboard {
     }
     
     renderLeaderboard(leaderboardData) {
-        const content = document.getElementById('leaderboardContent');
-        if (!content) return;
+        console.log('🏆 Looking for leaderboardContent element...');
+        
+        // Debug: Show all elements in the document
+        console.log('🏆 All elements with ID containing "leaderboard":', 
+            Array.from(document.querySelectorAll('[id*="leaderboard"]')).map(el => ({id: el.id, tagName: el.tagName, visible: el.style.display !== 'none'})));
+        
+        console.log('🏆 All elements with ID containing "Content":', 
+            Array.from(document.querySelectorAll('[id*="Content"]')).map(el => ({id: el.id, tagName: el.tagName, visible: el.style.display !== 'none'})));
+            
+        console.log('🏆 Current active tab:', document.querySelector('.tab-content.active')?.id);
+        
+        // Use querySelector instead of getElementById to find elements in hidden tabs
+        const content = document.querySelector('#leaderboardContent');
+        console.log('🏆 Element found with querySelector:', !!content);
+        
+        if (!content) {
+            console.error('🏆 leaderboardContent element not found even with querySelector!');
+            // Store the data for when tab becomes visible
+            this.latestLeaderboardData = leaderboardData;
+            
+            // Try again in 200ms, up to 5 times only
+            this.retryCount = (this.retryCount || 0) + 1;
+            if (this.retryCount <= 5) {
+                console.log(`🏆 Scheduling retry attempt ${this.retryCount} in 200ms`);
+                setTimeout(() => {
+                    console.log(`🏆 Retry attempt ${this.retryCount}/5`);
+                    this.renderLeaderboard(leaderboardData);
+                }, 200);
+            } else {
+                console.error('🏆 Failed to find leaderboardContent after 5 retries');
+                console.error('🏆 Creating emergency leaderboard element...');
+                this.createEmergencyLeaderboard(leaderboardData);
+                this.retryCount = 0;
+            }
+            return;
+        }
+        
+        // Reset retry count on success
+        this.retryCount = 0;
+        
+        // Store the data regardless of visibility
+        this.latestLeaderboardData = leaderboardData;
         
         console.log('🏆 Rendering leaderboard with data:', leaderboardData);
+        console.log('🏆 First entry structure:', leaderboardData[0]);
         
         try {
             if (leaderboardData && leaderboardData.length > 0) {
                 const currentPlayerName = window.game && window.game.isRegistered ? window.game.playerName : null;
+                const currentPlayerId = window.game && window.game.playerId ? window.game.playerId : null;
+                console.log('🏆 Current player name for highlighting:', currentPlayerName);
+                console.log('🏆 Current player ID for highlighting:', currentPlayerId);
                 
                 const leaderboardHTML = leaderboardData.map((entry, index) => {
                     const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
                     const nameStyle = index < 3 ? 'font-weight:700; text-shadow:1px 1px 2px rgba(0,0,0,0.3);' : 'font-weight:600;';
-                    const isCurrentPlayer = currentPlayerName && entry.player_name === currentPlayerName;
-                    const playerNameDisplay = isCurrentPlayer ? `${entry.player_name || 'Anonymous'} (You)` : (entry.player_name || 'Anonymous');
+                    // Check both player ID and name to identify current player - BOTH must match
+                    const isCurrentPlayer = currentPlayerName && currentPlayerId && 
+                                          (entry.player_name === currentPlayerName || entry.name === currentPlayerName) &&
+                                          (entry.player_id === currentPlayerId);
+                    const playerName = entry.player_name || entry.name || 'Anonymous';
+                    const playerNameDisplay = isCurrentPlayer ? `${playerName} (You)` : playerName;
                     const highlightStyle = isCurrentPlayer ? 'background:rgba(255,215,0,0.15); border-left:4px solid #FFD700;' : `border-left:4px solid ${index < 3 ? '#FFD700' : 'rgba(255,255,255,0.3)'};`;
                     
-                    return `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:0.8em 1em; margin:0.5em 0; background:rgba(255,255,255,0.1); border-radius:0.5em; ${highlightStyle} backdrop-filter:blur(10px);">
-                            <span style="display:flex; align-items:center; gap:0.8em;">
-                                <span style="font-size:1.2em; min-width:2em;">${medal}</span>
-                                <span style="${nameStyle}; color:white;">${playerNameDisplay}</span>
-                            </span>
-                            <span style="font-size:1.1em; font-weight:700; color:#FFD700; text-shadow:1px 1px 2px rgba(0,0,0,0.3);">${this.formatLargeNumber(entry.points)}</span>
-                        </div>
-                    `;
+                    console.log(`🏆 Player ${index + 1}: ${playerName}, ID: ${entry.player_id}, Current: ${isCurrentPlayer}`);
+                    
+                    // Handle different possible field names for score
+                    const score = entry.score || entry.total_points_earned || entry.points || 0;
+                    console.log(`🏆 Player ${index + 1}: ${playerName}, Score: ${score}, Entry:`, entry);
+                    
+                    try {
+                        const formattedScore = this.formatLargeNumber(score);
+                        console.log(`🏆 Formatted score for ${playerName}: ${formattedScore}`);
+                        
+                        return `
+                            <div style="display:flex; justify-content:space-between; align-items:center; padding:0.8em 1em; margin:0.5em 0; background:rgba(255,255,255,0.1); border-radius:0.5em; ${highlightStyle} backdrop-filter:blur(10px);">
+                                <span style="display:flex; align-items:center; gap:0.8em;">
+                                    <span style="font-size:1.2em; min-width:2em;">${medal}</span>
+                                    <span style="${nameStyle}; color:white;">${playerNameDisplay}</span>
+                                </span>
+                                <span style="font-size:1.1em; font-weight:700; color:#FFD700; text-shadow:1px 1px 2px rgba(0,0,0,0.3);">${formattedScore}</span>
+                            </div>
+                        `;
+                    } catch (formatError) {
+                        console.error(`🏆 Error formatting entry ${index}:`, formatError);
+                        return `<div>Error rendering player ${index + 1}</div>`;
+                    }
                 }).join('');
                 
+                console.log('🏆 Generated leaderboard HTML length:', leaderboardHTML.length);
+                console.log('🏆 First 200 chars of HTML:', leaderboardHTML.substring(0, 200));
+                
                 content.innerHTML = leaderboardHTML;
+                console.log('🏆 Leaderboard HTML successfully set to content element');
             } else {
+                console.log('🏆 No leaderboard data available');
                 content.innerHTML = '<div style="text-align:center; padding:2em; color:rgba(255,255,255,0.8); font-style:italic;">No scores yet. Be the first to submit!</div>';
             }
         } catch (error) {
+            console.error('🏆 Error rendering leaderboard:', error);
+            console.error('🏆 Error stack:', error.stack);
             content.innerHTML = '<div style="text-align:center; padding:2em; color:rgba(255,255,255,0.8);">Failed to load leaderboard.</div>';
         }
     }
@@ -183,6 +263,51 @@ class Leaderboard {
                 // Silent fail
             }
         }, 5 * 60 * 1000); // 5 minutes
+    }
+    
+    createEmergencyLeaderboard(leaderboardData) {
+        console.log('🏆 Creating emergency leaderboard...');
+        
+        // First, let's check if there's already a leaderboardContent that we can use
+        let existingContent = document.querySelector('#leaderboardContent');
+        if (existingContent) {
+            console.log('🏆 Found existing leaderboardContent, cleaning it up...');
+            existingContent.innerHTML = '';
+            existingContent.style.cssText = 'background: rgba(255,255,255,0.05); border-radius: 0.5em; padding: 1em; border: 1px solid rgba(255,255,255,0.1);';
+            this.renderLeaderboard(leaderboardData);
+            return;
+        }
+        
+        // If no existing element, create one (fallback)
+        const leaderboardTab = document.querySelector('#leaderboard');
+        if (!leaderboardTab) {
+            console.error('🏆 Even leaderboard tab not found!');
+            return;
+        }
+        
+        // Look for the section that should contain leaderboardContent
+        const topScoresSection = Array.from(leaderboardTab.querySelectorAll('h4')).find(h4 => h4.textContent.includes('Top Scores'));
+        
+        if (topScoresSection && topScoresSection.parentNode) {
+            // Create the missing leaderboardContent element in the right place
+            const contentDiv = document.createElement('div');
+            contentDiv.id = 'leaderboardContent';
+            contentDiv.style.cssText = 'background: rgba(255,255,255,0.05); border-radius: 0.5em; padding: 1em; border: 1px solid rgba(255,255,255,0.1); margin-top: 1em;';
+            
+            // Insert after the h4
+            topScoresSection.parentNode.insertBefore(contentDiv, topScoresSection.nextSibling);
+            console.log('🏆 Emergency leaderboard element created in proper location');
+        } else {
+            // Fallback: create at end of tab
+            const contentDiv = document.createElement('div');
+            contentDiv.id = 'leaderboardContent';
+            contentDiv.style.cssText = 'background: rgba(255,255,255,0.05); border-radius: 0.5em; padding: 1em; border: 1px solid rgba(255,255,255,0.1); margin-top: 1em;';
+            leaderboardTab.appendChild(contentDiv);
+            console.log('🏆 Emergency leaderboard element created at tab end');
+        }
+        
+        // Now render with the new element
+        this.renderLeaderboard(leaderboardData);
     }
 }
 

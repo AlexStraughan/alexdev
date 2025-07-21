@@ -7,12 +7,45 @@ class App {
         this.effects = null;
     }
 
+    async waitForWebSocketReady() {
+        return new Promise((resolve) => {
+            // If WebSocket is already connected, resolve immediately
+            if (window.wsClient && window.wsClient.isConnected) {
+                resolve();
+                return;
+            }
+            
+            // Otherwise, wait for the websocketReady event
+            const handleWebSocketReady = () => {
+                document.removeEventListener('websocketReady', handleWebSocketReady);
+                resolve();
+            };
+            
+            document.addEventListener('websocketReady', handleWebSocketReady);
+            
+            // Also listen for connection event as fallback
+            if (window.wsClient) {
+                window.wsClient.on('connected', () => {
+                    document.removeEventListener('websocketReady', handleWebSocketReady);
+                    resolve();
+                });
+            }
+            
+            // Timeout after 5 seconds if connection fails
+            setTimeout(() => {
+                console.warn('⚠️ WebSocket connection timeout, continuing anyway...');
+                document.removeEventListener('websocketReady', handleWebSocketReady);
+                resolve();
+            }, 5000);
+        });
+    }
+
     async initialize() {
         console.log('App initializing...');
         
-        // Initialize WebSocket client first
-        window.wsClient = new GameWebSocketClient();
-        console.log('WebSocket client initialized');
+        // Wait for WebSocket client to be ready
+        await this.waitForWebSocketReady();
+        console.log('WebSocket client ready');
         
         // Initialize all systems
         this.effects = new Effects();

@@ -372,9 +372,11 @@ class PlayerAvatars {
         ];
         const color = colors[this.hashString(player.id || player.name) % colors.length];
         
-        // Check if this is the current player
-        const currentPlayerName = localStorage.getItem('playerName');
-        const isCurrentPlayer = currentPlayerName && player.name === currentPlayerName;
+        // Check if this is the current player - BOTH name and ID must match
+        const currentPlayerName = window.game && window.game.playerName ? window.game.playerName : localStorage.getItem('playerName');
+        const currentPlayerId = window.game && window.game.playerId ? window.game.playerId : null;
+        const isCurrentPlayer = currentPlayerName && currentPlayerId && 
+                              (player.name === currentPlayerName) && (player.id === currentPlayerId);
         const playerNameDisplay = isCurrentPlayer ? `${player.name || 'Anonymous'} (You)` : (player.name || 'Anonymous');
         
         // Add special styling for current player

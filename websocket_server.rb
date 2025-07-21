@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'eventmachine'
 require 'json'
 require 'sqlite3'
@@ -18,6 +19,11 @@ class GameWebSocketServer
   def initialize
     @clients = {}
     @db = SQLite3::Database.new('leaderboard.db')
+    # Set busy timeout to prevent database locks
+    @db.busy_timeout = 5000  # 5 seconds
+    # Throttle broadcast_active_players to reduce console spam
+    @last_broadcast_time = 0
+    @broadcast_throttle_seconds = 30  # Only broadcast every 30 seconds max
     setup_database
     puts "🚀 WebSocket server initialized"
   end
@@ -91,7 +97,7 @@ class GameWebSocketServer
       message: 'Connected to game server'
     })
     
-    broadcast_active_players
+    broadcast_active_players_force
     
     # Store player_id in connection for cleanup
     connection.player_id = player_id
@@ -112,6 +118,8 @@ class GameWebSocketServer
       handle_register_player(player_id, message)
     when 'chat_message'
       handle_chat_message(player_id, message)
+    when 'player_activity'
+      handle_player_activity(player_id, message)
     when 'heartbeat'
       handle_heartbeat(player_id, message)
     when 'request_leaderboard'
@@ -184,59 +192,81 @@ class GameWebSocketServer
     game_player_id = message['game_player_id']
     state = message['state']
     
-    # Check if player exists
-    existing = @db.execute("SELECT id FROM game_states WHERE player_id = ? LIMIT 1", [game_player_id])
-    
-    if existing.empty?
-      # Insert new player state
-      @db.execute(
-        "INSERT INTO game_states (player_id, player_name, points, total_clicks, total_points_earned, click_power, crit_chance, crit_multiplier, generators, upgrades, achievements, game_hub_revealed, upgrades_tab_unlocked, last_active_time, offline_earnings_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        [
-          game_player_id,
-          state['player_name'],
-          state['points'] || 0,
-          state['total_clicks'] || 0,
-          state['total_points_earned'] || 0,
-          state['click_power'] || 1,
-          state['crit_chance'] || 0,
-          state['crit_multiplier'] || 2,
-          JSON.generate(state['generators'] || {}),
-          JSON.generate(state['upgrades'] || {}),
-          JSON.generate(state['achievements'] || []),
-          state['game_hub_revealed'] ? 1 : 0,
-          state['upgrades_tab_unlocked'] ? 1 : 0,
-          state['last_active_time'] || 0,
-          state['offline_earnings_rate'] || 0.4
-        ]
-      )
-    else
-      # Update existing player state
-      @db.execute(
-        "UPDATE game_states SET player_name = ?, points = ?, total_clicks = ?, total_points_earned = ?, click_power = ?, crit_chance = ?, crit_multiplier = ?, generators = ?, upgrades = ?, achievements = ?, game_hub_revealed = ?, upgrades_tab_unlocked = ?, last_active_time = ?, offline_earnings_rate = ?, updated_at = CURRENT_TIMESTAMP WHERE player_id = ?",
-        [
-          state['player_name'],
-          state['points'] || 0,
-          state['total_clicks'] || 0,
-          state['total_points_earned'] || 0,
-          state['click_power'] || 1,
-          state['crit_chance'] || 0,
-          state['crit_multiplier'] || 2,
-          JSON.generate(state['generators'] || {}),
-          JSON.generate(state['upgrades'] || {}),
-          JSON.generate(state['achievements'] || []),
-          state['game_hub_revealed'] ? 1 : 0,
-          state['upgrades_tab_unlocked'] ? 1 : 0,
-          state['last_active_time'] || 0,
-          state['offline_earnings_rate'] || 0.4,
-          game_player_id
-        ]
-      )
-    end
+    begin
+      # Use transaction with retry for better reliability
+      @db.transaction do
+        # Check if player exists
+        existing = @db.execute("SELECT id FROM game_states WHERE player_id = ? LIMIT 1", [game_player_id])
+        
+        if existing.empty?
+          # Insert new player state
+          @db.execute(
+            "INSERT INTO game_states (player_id, player_name, points, total_clicks, total_points_earned, click_power, crit_chance, crit_multiplier, generators, upgrades, achievements, game_hub_revealed, upgrades_tab_unlocked, last_active_time, offline_earnings_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            [
+              game_player_id,
+              state['player_name'],
+              state['points'] || 0,
+              state['total_clicks'] || 0,
+              state['total_points_earned'] || 0,
+              state['click_power'] || 1,
+              state['crit_chance'] || 0,
+              state['crit_multiplier'] || 2,
+              JSON.generate(state['generators'] || {}),
+              JSON.generate(state['upgrades'] || {}),
+              JSON.generate(state['achievements'] || []),
+              state['game_hub_revealed'] ? 1 : 0,
+              state['upgrades_tab_unlocked'] ? 1 : 0,
+              state['last_active_time'] || 0,
+              state['offline_earnings_rate'] || 0.4
+            ]
+          )
+        else
+          # Update existing player state
+          @db.execute(
+            "UPDATE game_states SET player_name = ?, points = ?, total_clicks = ?, total_points_earned = ?, click_power = ?, crit_chance = ?, crit_multiplier = ?, generators = ?, upgrades = ?, achievements = ?, game_hub_revealed = ?, upgrades_tab_unlocked = ?, last_active_time = ?, offline_earnings_rate = ?, updated_at = CURRENT_TIMESTAMP WHERE player_id = ?",
+            [
+              state['player_name'],
+              state['points'] || 0,
+              state['total_clicks'] || 0,
+              state['total_points_earned'] || 0,
+              state['click_power'] || 1,
+              state['crit_chance'] || 0,
+              state['crit_multiplier'] || 2,
+              JSON.generate(state['generators'] || {}),
+              JSON.generate(state['upgrades'] || {}),
+              JSON.generate(state['achievements'] || []),
+              state['game_hub_revealed'] ? 1 : 0,
+              state['upgrades_tab_unlocked'] ? 1 : 0,
+              state['last_active_time'] || 0,
+              state['offline_earnings_rate'] || 0.4,
+              game_player_id
+            ]
+          )
+        end
+      end
 
-    send_to_client(player_id, {
-      type: 'game_state_saved',
-      success: true
-    })
+      send_to_client(player_id, {
+        type: 'game_state_saved',
+        success: true
+      })
+
+    rescue SQLite3::BusyException => e
+      puts "🚨 Database busy, retrying save operation..."
+      sleep(0.1)
+      # Send failure response - client can retry
+      send_to_client(player_id, {
+        type: 'game_state_saved',
+        success: false,
+        error: 'Database busy, please try again'
+      })
+    rescue => e
+      puts "❌ Error saving game state: #{e.message}"
+      send_to_client(player_id, {
+        type: 'game_state_saved',
+        success: false,
+        error: e.message
+      })
+    end
 
     # Don't broadcast leaderboard immediately after save to avoid showing temporary low scores
     # Leaderboard updates will be handled by the periodic broadcast timer
@@ -254,7 +284,7 @@ class GameWebSocketServer
       player_name: player_name
     })
 
-    broadcast_active_players
+    broadcast_active_players_force
   end
 
   def handle_chat_message(player_id, message)
@@ -278,6 +308,23 @@ class GameWebSocketServer
       message: chat_message,
       timestamp: Time.now.to_i
     })
+  end
+
+  def handle_player_activity(player_id, message)
+    client = @clients[player_id]
+    return unless client
+
+    # Update client activity data
+    client[:last_seen] = Time.now
+    client[:score] = message['score'] || 0
+    client[:level] = message['level'] || 1
+    client[:points_per_second] = message['points_per_second'] || 0
+    client[:generators_owned] = message['generators_owned'] || 0
+
+    puts "📊 Updated activity for #{client[:player_name]}: #{client[:score]} pts"
+
+    # Broadcast active players update
+    broadcast_active_players
   end
 
   def handle_heartbeat(player_id, message)
@@ -309,6 +356,8 @@ class GameWebSocketServer
   def handle_admin_command(player_id, message)
     # Get admin password from environment variable, fallback to default for development
     admin_password = ENV['ADMIN_PASSWORD'] || "admin123"
+    
+    puts "🔐 Admin command received - Expected password: '#{admin_password}', Received: '#{message['password']}'"
     
     if message['password'] != admin_password
       send_to_client(player_id, {
@@ -433,6 +482,8 @@ class GameWebSocketServer
       
       if new_points
         updates << "points = ?"
+        updates << "total_points_earned = ?"
+        values << new_points
         values << new_points
         changes << "points to #{new_points}"
       end
@@ -457,11 +508,19 @@ class GameWebSocketServer
       
       @db.execute("UPDATE game_states SET #{updates.join(', ')} WHERE player_id = ?", values)
       
-      send_to_client(player_id, {
+      response = {
         type: 'admin_response',
         success: true,
-        message: "✅ Updated player '#{target_id}': #{changes.join(', ')}"
-      })
+        message: "✅ Updated player '#{target_id}': #{changes.join(', ')}",
+        updated_player_id: target_id
+      }
+      
+      # Include new points in response if points were updated
+      if new_points
+        response[:new_points] = new_points
+      end
+      
+      send_to_client(player_id, response)
       
       # Leaderboard will update on next periodic broadcast (every 10 seconds)
       puts "🔧 Admin edited player: #{target_id} - #{changes.join(', ')}"
@@ -550,8 +609,7 @@ class GameWebSocketServer
       })
       
       broadcast_leaderboard_update
-      puts "� Admin reset leaderboard: #{count} players deleted, all clients notified"
-      
+      puts "🔧 Admin reset leaderboard: #{count} players deleted, all clients notified"
     rescue => e
       send_to_client(player_id, {
         type: 'admin_response',
@@ -692,6 +750,12 @@ class GameWebSocketServer
   end
 
   def broadcast_active_players
+    # Throttle broadcasts to reduce console spam
+    current_time = Time.now.to_i
+    return if current_time - @last_broadcast_time < @broadcast_throttle_seconds
+    
+    @last_broadcast_time = current_time
+    
     active_players = @clients.values.select { |client| client[:registered] }.map do |client|
       {
         player_id: client[:player_id],
@@ -707,6 +771,13 @@ class GameWebSocketServer
       type: 'active_players_update',
       players: active_players
     })
+    puts "👥 Broadcasted active players update to #{@clients.count} clients (throttled)"
+  end
+
+  def broadcast_active_players_force
+    # Force broadcast without throttling (for connects/disconnects)
+    @last_broadcast_time = 0  # Reset throttle
+    broadcast_active_players
   end
 
   def send_to_client(player_id, message)

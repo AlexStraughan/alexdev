@@ -4,9 +4,13 @@ This document describes the admin commands available in the WebSocket server for
 
 ## Authentication
 
-All admin commands require the admin password: `admin123`
+All admin commands require the admin password. The system will **prompt you for the password** when you first use any admin command.
 
-**⚠️ SECURITY NOTE:** Change the admin password in `websocket_server.rb` line where `admin_password = "admin123"` for production use.
+- **Password Caching**: The password is cached for 5 minutes for convenience
+- **Clear Cache**: Use `adminCommands.clearPassword()` to force re-authentication
+- **Default Password**: `admin123` (can be changed via `ADMIN_PASSWORD` environment variable)
+
+**⚠️ SECURITY NOTE:** The admin password can be set via the `ADMIN_PASSWORD` environment variable in `.env` file or falls back to the default `admin123`. Change this for production use.
 
 ## Command Format
 
@@ -15,11 +19,13 @@ All admin commands are sent as WebSocket messages with this structure:
 ```javascript
 {
   type: 'admin_command',
-  password: 'admin123',
+  password: '[prompted_password]',
   command: 'command_name',
   // additional parameters...
 }
 ```
+
+**Note**: You don't need to worry about the password field - the system will automatically prompt you and handle authentication.
 
 ## Available Commands
 
@@ -174,6 +180,12 @@ adminCommands.giveMyself(50000)
 ```
 Edits your own player's score (requires game to be loaded).
 
+### Clear Admin Password Cache
+```javascript
+adminCommands.clearPassword()
+```
+Clears the cached admin password, forcing re-authentication on next command.
+
 ## Usage Examples
 
 ### Browser Console Usage
@@ -198,6 +210,9 @@ adminCommands.giveMyself(99999)
 
 // Add multiple test players
 adminCommands.addTestPlayers()
+
+// Clear cached admin password (forces re-authentication)
+adminCommands.clearPassword()
 
 // Clean up - delete a player
 adminCommands.deletePlayer("admin_12345678")
@@ -246,8 +261,10 @@ All admin commands return responses in this format:
 
 **"WebSocket not connected"**: Ensure the WebSocket server is running and you've loaded the game page.
 
-**"Invalid admin password"**: Check that you're using the correct password (default: `admin123`).
+**"Invalid admin password"**: The system will prompt you for the password. Check that you're entering the correct password (default: `admin123`). Use `adminCommands.clearPassword()` to clear the cached password and try again.
 
 **"Player not found"**: Use `listPlayers()` to get valid player IDs.
+
+**Password prompt not appearing**: Make sure you're running commands in the browser console where the game page is loaded.
 
 **Functions not available**: Ensure you've loaded the game page where `websocket-client.js` is included.

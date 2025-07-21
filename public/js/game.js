@@ -514,6 +514,45 @@ class Game {
                 isInfinite: true,
                 unlockCondition: { type: "generator_owned", generator: "time_machine", count: 1 }
             },
+            {
+                id: "multiverse_compiler_infinite",
+                name: "Multiverse Optimization",
+                description: "+5% production per level",
+                baseCost: 2500000000000,
+                effect: "infiniteGeneratorMultiplier",
+                value: 0.05,
+                icon: "🔄",
+                category: "multiverse_compiler",
+                targetGenerator: "multiverse_compiler",
+                isInfinite: true,
+                unlockCondition: { type: "generator_owned", generator: "multiverse_compiler", count: 1 }
+            },
+            {
+                id: "god_algorithm_infinite",
+                name: "Divine Optimization",
+                description: "+5% production per level",
+                baseCost: 40000000000000,
+                effect: "infiniteGeneratorMultiplier",
+                value: 0.05,
+                icon: "🔄",
+                category: "god_algorithm",
+                targetGenerator: "god_algorithm",
+                isInfinite: true,
+                unlockCondition: { type: "generator_owned", generator: "god_algorithm", count: 1 }
+            },
+            {
+                id: "code_singularity_infinite",
+                name: "Singularity Optimization",
+                description: "+5% production per level",
+                baseCost: 880000000000000,
+                effect: "infiniteGeneratorMultiplier",
+                value: 0.05,
+                icon: "🔄",
+                category: "code_singularity",
+                targetGenerator: "code_singularity",
+                isInfinite: true,
+                unlockCondition: { type: "generator_owned", generator: "code_singularity", count: 1 }
+            },
             // Infinite Click Upgrades
             {
                 id: "click_infinite",
@@ -803,6 +842,12 @@ class Game {
         // Register via WebSocket
         window.wsClient.registerPlayer(playerName);
         
+        // Enable player tracking
+        if (window.playerTracker) {
+            window.playerTracker.enableTracking(playerName);
+            console.log('👥 Player tracking enabled for:', playerName);
+        }
+        
         // Save the registered state
         await this.saveGameState();
         
@@ -855,6 +900,12 @@ class Game {
             this.hideUpgradesTab();
         }
         this.checkProgressiveUnlocks();
+        
+        // Enable player tracking if user is registered
+        if (this.isRegistered && this.playerName && window.playerTracker) {
+            window.playerTracker.enableTracking(this.playerName);
+            console.log('👥 Player tracking enabled during initialization for:', this.playerName);
+        }
         
         this.startGameLoop();
     }
@@ -1071,8 +1122,13 @@ class Game {
 
     // Update status display
     updateStatusDisplay() {
-        document.getElementById('clickPowerDisplay').textContent = this.formatNumber(this.state.clickPower);
-        document.getElementById('critChanceDisplay').textContent = this.state.critChance.toFixed(0) + '%';
+        // Get effective click power including infinite upgrades
+        const infiniteMultipliers = this.getInfiniteClickMultipliers();
+        const effectiveClickPower = this.state.clickPower * infiniteMultipliers.clickMultiplier;
+        const effectiveCritChance = Math.min(100, this.state.critChance + infiniteMultipliers.critChanceBonus);
+        
+        document.getElementById('clickPowerDisplay').textContent = this.formatNumber(effectiveClickPower);
+        document.getElementById('critChanceDisplay').textContent = effectiveCritChance.toFixed(0) + '%';
         document.getElementById('clickRateDisplay').textContent = this.state.clicksPerSecond.toFixed(1) + '/s';
         document.getElementById('generatorMultiplierDisplay').textContent = this.getGlobalGeneratorMultiplier().toFixed(1) + 'x';
     }
@@ -1142,9 +1198,21 @@ class Game {
         };
         
         // Track when user returns to the tab/window
+        let offlineCheckPending = false;
         const checkOfflineEarningsOnReturn = () => {
+            if (offlineCheckPending) {
+                console.log('👁️ Offline earnings check already pending, skipping');
+                return;
+            }
+            
+            offlineCheckPending = true;
             console.log('👁️ User active - checking for offline earnings');
-            this.checkOfflineEarnings();
+            
+            // Small delay to prevent multiple simultaneous checks
+            setTimeout(() => {
+                this.checkOfflineEarnings();
+                offlineCheckPending = false;
+            }, 100);
         };
         
         // Handle visibility changes (tab switching)
@@ -1194,6 +1262,14 @@ class Game {
     }
     
     checkOfflineEarnings() {
+        // Prevent multiple checks from running simultaneously
+        if (this.offlineEarningsCheckInProgress) {
+            console.log('⚠️ Offline earnings check already in progress, skipping');
+            return;
+        }
+        
+        this.offlineEarningsCheckInProgress = true;
+        
         const now = Date.now();
         const lastActive = this.state.lastActiveTime || now;
         const timeAway = now - lastActive;
@@ -1251,11 +1327,21 @@ class Game {
         
         // Update last active time to now
         this.state.lastActiveTime = now;
+        
+        // Reset the flag
+        this.offlineEarningsCheckInProgress = false;
     }
     
     showOfflineEarningsPopup(secondsAway, pointsEarned) {
+        // Prevent multiple popups from being created
+        if (document.querySelector('#offlineEarningsPopup')) {
+            console.log('⚠️ Offline earnings popup already exists, skipping');
+            return;
+        }
+        
         // Create popup overlay
         const overlay = document.createElement('div');
+        overlay.id = 'offlineEarningsPopup';
         overlay.style.cssText = `
             position: fixed;
             top: 0;

@@ -243,10 +243,10 @@ class ChatSystem {
         // Update immediately
         this.updateMessages();
         
-        // Then update every 5 seconds
+        // Then update every 15 seconds (reduced from 5 seconds to reduce server load)
         this.updateInterval = setInterval(() => {
             this.updateMessages();
-        }, 5000);
+        }, 15000);
     }
     
     setupEventListeners() {
@@ -270,7 +270,7 @@ class ChatSystem {
     setupWebSocketListeners() {
         // Listen for incoming chat messages
         window.wsClient.on('chat_message', (data) => {
-            console.log('💬 Received chat message:', data);
+            // Removed console log to reduce spam
             if (data.player_id && data.message && data.timestamp) {
                 this.handleIncomingMessage(data);
             }

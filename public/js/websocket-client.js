@@ -58,6 +58,10 @@ class GameWebSocketClient {
                     // Trigger connection callbacks
                     this.triggerCallbacks('connected', { connected: true });
                     
+                    // Start heartbeat to keep connection alive and send activity data
+                    this.startHeartbeat();
+                    console.log('💓 Heartbeat started');
+                    
                     // Dispatch websocketReady event for other systems
                     document.dispatchEvent(new CustomEvent('websocketReady', {
                         detail: { wsClient: this }
@@ -70,6 +74,16 @@ class GameWebSocketClient {
                     // console.log('📨 Raw message received:', event.data);
                     const message = JSON.parse(event.data);
                     console.log('📨 Parsed message:', message.type, message);
+                    
+                    // Add detailed logging for leaderboard and active players
+                    if (message.type === 'leaderboard_update') {
+                        console.log('🏆 Leaderboard data received:', message.leaderboard);
+                        console.log('🏆 First entry:', message.leaderboard[0]);
+                    }
+                    if (message.type === 'active_players_update') {
+                        console.log('👥 Active players data received:', message.players);
+                    }
+                    
                     this.handleMessage(message);
                 } catch (e) {
                     console.error('❌ Error parsing WebSocket message:', e);
@@ -110,7 +124,11 @@ class GameWebSocketClient {
     }
 
     handleMessage(message) {
-        console.log('📨 Processing message:', message.type);
+        // Reduced logging to prevent console spam - only log message type for important events
+        const shouldLog = ['connected', 'admin_response', 'game_reset'].includes(message.type);
+        if (shouldLog) {
+            console.log('📨 Processing message:', message.type);
+        }
         
         try {
             switch (message.type) {
@@ -134,7 +152,7 @@ class GameWebSocketClient {
                     this.triggerCallbacks('player_registered', message);
                     break;
                 case 'chat_message':
-                    console.log('💬 Chat message received');
+                    // Removed console log to reduce spam
                     this.triggerCallbacks('chat_message', message);
                     break;
                 case 'leaderboard_update':
@@ -149,6 +167,38 @@ class GameWebSocketClient {
                     console.log('🔧 Admin response:', message.success ? '✅' : '❌', message.message);
                     if (message.success) {
                         console.log('%c' + message.message, 'color: green; font-weight: bold');
+                        
+                        // Check if this admin command affected the current player's score
+                        if (message.updated_player_id && window.game && window.game.playerId === message.updated_player_id) {
+                            console.log('🎮 Admin command affected current player - syncing game state...');
+                            
+                            // Update the game state if points were changed
+                            if (message.new_points !== undefined) {
+                                window.game.state.points = message.new_points;
+                                window.game.state.totalPointsEarned = message.new_points;
+                                
+                                // Update the display using the correct method
+                                if (typeof window.game.updateDisplay === 'function') {
+                                    window.game.updateDisplay();
+                                    
+                                    // Also trigger re-render of generators and upgrades in case new items unlocked
+                                    if (typeof window.game.renderGenerators === 'function') {
+                                        window.game.renderGenerators();
+                                    }
+                                    if (typeof window.game.renderUpgrades === 'function') {
+                                        window.game.renderUpgrades();
+                                    }
+                                } else {
+                                    // Fallback: manually update point display
+                                    const pointsElement = document.getElementById('points');
+                                    if (pointsElement) {
+                                        pointsElement.textContent = message.new_points.toLocaleString();
+                                    }
+                                }
+                                
+                                console.log(`🎉 Game state synced! You now have ${message.new_points.toLocaleString()} points!`);
+                            }
+                        }
                     } else {
                         console.error('%c' + message.message, 'color: red; font-weight: bold');
                     }
@@ -271,9 +321,10 @@ class GameWebSocketClient {
                     points_per_second: window.game.state.pointsPerSecond || 0,
                     generators_owned: Object.values(window.game.state.generators || {}).reduce((sum, count) => sum + count, 0)
                 };
+                // Removed heartbeat console logs to reduce spam
             }
             this.sendHeartbeat(activityData);
-        }, 5000); // Every 5 seconds
+        }, 10000); // Every 10 seconds for easier debugging
     }
 
     stopHeartbeat() {
@@ -329,6 +380,39 @@ class GameWebSocketClient {
 // Create global WebSocket client instance
 window.wsClient = new GameWebSocketClient();
 
+// Admin password management
+window.adminSession = {
+    password: null,
+    passwordExpiry: null,
+    
+    getPassword: function() {
+        // Check if we have a valid cached password (expires after 5 minutes)
+        if (this.password && this.passwordExpiry && Date.now() < this.passwordExpiry) {
+            return this.password;
+        }
+        
+        // Prompt for password
+        const password = prompt('🔐 Enter admin password:');
+        if (!password) {
+            console.log('❌ Admin command cancelled - no password provided');
+            return null;
+        }
+        
+        // Cache password for 5 minutes
+        this.password = password;
+        this.passwordExpiry = Date.now() + (5 * 60 * 1000); // 5 minutes
+        console.log('🔐 Admin password cached for 5 minutes');
+        
+        return password;
+    },
+    
+    clearPassword: function() {
+        this.password = null;
+        this.passwordExpiry = null;
+        console.log('🔐 Admin password cleared from cache');
+    }
+};
+
 // Admin helper functions for browser console
 window.adminCommands = {
     // Show help
@@ -337,9 +421,12 @@ window.adminCommands = {
             console.error('❌ WebSocket not connected');
             return;
         }
+        const password = window.adminSession.getPassword();
+        if (!password) return;
+        
         window.wsClient.send({
             type: 'admin_command',
-            password: 'admin123',
+            password: password,
             command: 'help'
         });
     },
@@ -350,9 +437,12 @@ window.adminCommands = {
             console.error('❌ WebSocket not connected');
             return;
         }
+        const password = window.adminSession.getPassword();
+        if (!password) return;
+        
         window.wsClient.send({
             type: 'admin_command',
-            password: 'admin123',
+            password: password,
             command: 'list_players'
         });
     },
@@ -367,10 +457,13 @@ window.adminCommands = {
             console.error('❌ Player name is required');
             return;
         }
+        const password = window.adminSession.getPassword();
+        if (!password) return;
+        
         console.log(`➕ Adding player: ${playerName} with ${points} points`);
         window.wsClient.send({
             type: 'admin_command',
-            password: 'admin123',
+            password: password,
             command: 'add_player',
             player_name: playerName,
             points: points
@@ -387,10 +480,12 @@ window.adminCommands = {
             console.error('❌ Player ID is required');
             return;
         }
+        const password = window.adminSession.getPassword();
+        if (!password) return;
         
         const message = {
             type: 'admin_command',
-            password: 'admin123',
+            password: password,
             command: 'edit_player',
             target_player_id: playerId
         };
@@ -422,6 +517,9 @@ window.adminCommands = {
             console.error('❌ Player ID is required');
             return;
         }
+        const password = window.adminSession.getPassword();
+        if (!password) return;
+        
         if (!confirm(`Are you sure you want to delete player: ${playerId}?`)) {
             console.log('❌ Delete cancelled');
             return;
@@ -429,7 +527,7 @@ window.adminCommands = {
         console.log(`🗑️ Deleting player: ${playerId}`);
         window.wsClient.send({
             type: 'admin_command',
-            password: 'admin123',
+            password: password,
             command: 'delete_player',
             target_player_id: playerId
         });
@@ -441,6 +539,9 @@ window.adminCommands = {
             console.error('❌ WebSocket not connected');
             return;
         }
+        const password = window.adminSession.getPassword();
+        if (!password) return;
+        
         if (!confirm('⚠️ Are you ABSOLUTELY sure you want to delete ALL players from the leaderboard? This cannot be undone!')) {
             console.log('❌ Reset cancelled');
             return;
@@ -448,7 +549,7 @@ window.adminCommands = {
         console.log('💥 Resetting leaderboard...');
         window.wsClient.send({
             type: 'admin_command',
-            password: 'admin123',
+            password: password,
             command: 'reset_leaderboard',
             confirm: 'YES_DELETE_ALL'
         });
@@ -470,10 +571,13 @@ window.adminCommands = {
             console.error('❌ WebSocket not connected');
             return;
         }
+        const password = window.adminSession.getPassword();
+        if (!password) return;
+        
         console.log('🔍 Checking database state...');
         window.wsClient.send({
             type: 'admin_command',
-            password: 'admin123',
+            password: password,
             command: 'check_database'
         });
     },
@@ -486,6 +590,11 @@ window.adminCommands = {
         }
         console.log(`💰 Giving yourself ${points} points`);
         this.editPlayer(window.game.playerId, { points: points });
+    },
+    
+    // Clear cached admin password
+    clearPassword: function() {
+        window.adminSession.clearPassword();
     }
 };
 
@@ -501,8 +610,14 @@ console.log(`
 - adminCommands.addTestPlayers() - Add 5 test players
 - adminCommands.checkDatabase() - Check database state
 - adminCommands.giveMyself(points) - Edit your own score
+- adminCommands.clearPassword() - Clear cached admin password
+
+🔐 Password System:
+- Admin commands will prompt for password on first use
+- Password is cached for 5 minutes for convenience
+- Use clearPassword() to force re-authentication
 
 💡 Example: adminCommands.addPlayer("TestUser", 5000)
 💡 Example: adminCommands.editPlayer("player_123", {points: 9999, name: "Hacker"})
-💡 Default admin password: "admin123"
+💡 Example: adminCommands.giveMyself(99999)
 `);
