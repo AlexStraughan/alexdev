@@ -57,6 +57,11 @@ class GameWebSocketClient {
                     
                     // Trigger connection callbacks
                     this.triggerCallbacks('connected', { connected: true });
+                    
+                    // Dispatch websocketReady event for other systems
+                    document.dispatchEvent(new CustomEvent('websocketReady', {
+                        detail: { wsClient: this }
+                    }));
                 }, 100);
             };
 

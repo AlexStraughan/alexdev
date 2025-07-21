@@ -255,6 +255,38 @@ class ChatSystem {
             this.currentPlayerId = event.detail.playerId;
             this.currentPlayerName = event.detail.playerName;
         });
+        
+        // Listen for incoming chat messages via WebSocket
+        if (window.wsClient) {
+            this.setupWebSocketListeners();
+        } else {
+            // Wait for WebSocket client to be ready
+            document.addEventListener('websocketReady', () => {
+                this.setupWebSocketListeners();
+            });
+        }
+    }
+    
+    setupWebSocketListeners() {
+        // Listen for incoming chat messages
+        window.wsClient.on('chat_message', (data) => {
+            console.log('💬 Received chat message:', data);
+            if (data.player_id && data.message && data.timestamp) {
+                this.handleIncomingMessage(data);
+            }
+        });
+        
+        console.log('📡 Chat system connected to WebSocket');
+    }
+    
+    handleIncomingMessage(messageData) {
+        // Find the player element to show the speech bubble
+        const playerElement = document.querySelector(`[data-player-id="${messageData.player_id}"]`);
+        if (playerElement) {
+            this.createSpeechBubble(messageData, playerElement);
+        } else {
+            console.log('Player element not found for message:', messageData);
+        }
     }
     
     destroy() {

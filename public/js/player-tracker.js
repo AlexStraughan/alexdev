@@ -70,25 +70,41 @@ class PlayerTracker {
         if (!this.isActive || !this.isTracking) return;
         
         try {
-            const response = await fetch('/api/player-activity', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+            // Use WebSocket if available, fallback to HTTP
+            if (window.wsClient && window.wsClient.isConnected) {
+                window.wsClient.send({
+                    type: 'player_activity',
                     player_id: this.playerId,
                     player_name: this.playerName,
                     score: gameData.score || 0,
                     level: gameData.level || 1,
                     points_per_second: gameData.pointsPerSecond || 0,
                     generators_owned: gameData.generatorsOwned || 0
-                })
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
+                });
                 this.lastActivityUpdate = Date.now();
-                return data;
+                return { success: true };
+            } else {
+                // Fallback to HTTP API
+                const response = await fetch('/api/player-activity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        player_id: this.playerId,
+                        player_name: this.playerName,
+                        score: gameData.score || 0,
+                        level: gameData.level || 1,
+                        points_per_second: gameData.pointsPerSecond || 0,
+                        generators_owned: gameData.generatorsOwned || 0
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    this.lastActivityUpdate = Date.now();
+                    return data;
+                }
             }
         } catch (error) {
             console.error('Error updating player activity:', error);
@@ -147,6 +163,16 @@ class PlayerTracker {
             }
         });
         
+        // Setup WebSocket listeners
+        if (window.wsClient) {
+            this.setupWebSocketListeners();
+        } else {
+            // Wait for WebSocket client to be ready
+            document.addEventListener('websocketReady', () => {
+                this.setupWebSocketListeners();
+            });
+        }
+        
         // Handle before unload
         window.addEventListener('beforeunload', () => {
             this.isActive = false;
@@ -159,6 +185,82 @@ class PlayerTracker {
                 }));
             }
         });
+    }
+    
+    setupWebSocketListeners() {
+        // Listen for active players updates
+        window.wsClient.on('active_players_update', (data) => {
+            console.log('👥 Received active players update:', data);
+            if (data.players) {
+                this.updateActivePlayersDisplay(data.players);
+            }
+        });
+        
+        // Listen for leaderboard updates
+        window.wsClient.on('leaderboard_update', (data) => {
+            console.log('🏆 Received leaderboard update:', data);
+            if (data.leaderboard) {
+                this.updateLeaderboardDisplay(data.leaderboard);
+            }
+        });
+        
+        console.log('📡 Player tracker connected to WebSocket');
+    }
+    
+    updateActivePlayersDisplay(players) {
+        // Update the active players display in the UI
+        const activePlayersElement = document.getElementById('activePlayers');
+        if (activePlayersElement && Array.isArray(players)) {
+            const playersHtml = players.map(player => {
+                const isCurrentPlayer = player.player_id === this.playerId;
+                const playerClass = isCurrentPlayer ? 'current-player' : 'other-player';
+                return `
+                    <div class="active-player ${playerClass}" data-player-id="${player.player_id}">
+                        <span class="player-name">${player.player_name || 'Anonymous'}</span>
+                        <span class="player-score">${this.formatNumber(player.score || 0)} pts</span>
+                    </div>
+                `;
+            }).join('');
+            
+            activePlayersElement.innerHTML = `
+                <h4>🌐 Active Players (${players.length})</h4>
+                ${playersHtml}
+            `;
+        }
+    }
+    
+    updateLeaderboardDisplay(leaderboard) {
+        // Update the leaderboard display in the UI
+        const leaderboardElement = document.getElementById('leaderboard');
+        if (leaderboardElement && Array.isArray(leaderboard)) {
+            const leaderboardHtml = leaderboard.map((player, index) => {
+                const isCurrentPlayer = player.player_id === this.playerId;
+                const playerClass = isCurrentPlayer ? 'current-player' : 'other-player';
+                const rank = index + 1;
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                
+                return `
+                    <div class="leaderboard-entry ${playerClass}">
+                        <span class="rank">${medal}</span>
+                        <span class="player-name">${player.player_name || 'Anonymous'}</span>
+                        <span class="player-score">${this.formatNumber(player.total_points_earned || 0)} pts</span>
+                    </div>
+                `;
+            }).join('');
+            
+            leaderboardElement.innerHTML = `
+                <h4>🏆 Top Players</h4>
+                ${leaderboardHtml}
+            `;
+        }
+    }
+    
+    formatNumber(num) {
+        if (num < 1000) return Math.floor(num).toString();
+        if (num < 1000000) return (num / 1000).toFixed(1) + 'K';
+        if (num < 1000000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num < 1000000000000) return (num / 1000000000).toFixed(1) + 'B';
+        return (num / 1000000000000).toFixed(1) + 'T';
     }
     
     destroy() {
