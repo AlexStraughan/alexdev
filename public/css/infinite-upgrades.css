@@ -1,0 +1,166 @@
+/* Enhanced Infinite Upgrades Manager Styles */
+
+/* Infinite upgrade cards special styling */
+.infinite-upgrade-card {
+    position: relative;
+    border: 2px solid rgba(255, 107, 107, 0.3) !important;
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(238, 90, 82, 0.1) 100%) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.infinite-upgrade-card::before {
+    content: "∞";
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    color: #ff6b6b;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.7);
+    z-index: 10;
+    animation: infiniteGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes infiniteGlow {
+    from {
+        opacity: 0.7;
+        transform: scale(1);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+/* Level indicator styling */
+.infinite-upgrade-card.has-level .skill-name {
+    background: linear-gradient(90deg, #ff6b6b, #ee5a52, #ff6b6b);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: levelShimmer 3s linear infinite;
+}
+
+@keyframes levelShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Toggle button styles */
+.infinite-upgrades-toggle {
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.infinite-upgrades-toggle:active {
+    transform: translateY(0) scale(0.98) !important;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.6) !important;
+}
+
+/* Hidden state animations */
+.infinite-hidden {
+    opacity: 0 !important;
+    transform: scale(0.8) translateY(-20px) !important;
+    pointer-events: none !important;
+}
+
+/* Smooth transitions for all infinite upgrade cards */
+.infinite-upgrade-card {
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.3s ease,
+                background 0.3s ease !important;
+}
+
+/* Enhanced hover effects for infinite upgrades */
+.infinite-upgrade-card:hover {
+    border-color: rgba(255, 107, 107, 0.8) !important;
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3) !important;
+    transform: translateY(-5px) !important;
+}
+
+/* Affordable infinite upgrades get extra glow */
+.infinite-upgrade-card.affordable {
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.4),
+                0 0 40px rgba(255, 107, 107, 0.2) !important;
+    border-color: rgba(255, 107, 107, 0.7) !important;
+}
+
+.infinite-upgrade-card.affordable:hover {
+    box-shadow: 0 0 30px rgba(255, 107, 107, 0.6),
+                0 0 60px rgba(255, 107, 107, 0.3),
+                0 8px 25px rgba(255, 107, 107, 0.4) !important;
+}
+
+/* Loading state for upgrades refresh */
+.upgrades-refreshing .infinite-upgrade-card {
+    opacity: 0.7;
+    filter: blur(1px);
+    transition: all 0.3s ease;
+}
+
+/* Debug mode styles */
+.debug-infinite-upgrades .infinite-upgrade-card {
+    border: 3px dashed #ff6b6b !important;
+    position: relative;
+}
+
+.debug-infinite-upgrades .infinite-upgrade-card::after {
+    content: "DEBUG";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff6b6b;
+    color: white;
+    padding: 2px 8px;
+    font-size: 9px;
+    font-weight: bold;
+    border-radius: 10px;
+    z-index: 1000;
+}
+
+/* Special effects for high-level infinite upgrades */
+.infinite-upgrade-card[data-level="10"]::before,
+.infinite-upgrade-card[data-level="20"]::before,
+.infinite-upgrade-card[data-level="50"]::before {
+    animation: infiniteGlow 1s ease-in-out infinite alternate,
+               levelMilestone 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes levelMilestone {
+    from { 
+        color: #ff6b6b;
+        text-shadow: 0 0 10px rgba(255, 107, 107, 0.7);
+    }
+    to { 
+        color: #ffd700;
+        text-shadow: 0 0 15px rgba(255, 215, 0, 0.9);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .infinite-upgrades-toggle {
+        top: 50px;
+        right: 10px;
+        font-size: 11px;
+        padding: 8px 12px;
+    }
+    
+    .infinite-upgrade-card::before {
+        font-size: 14px;
+        top: 3px;
+        right: 5px;
+    }
+}
+
+/* Performance optimizations */
+.infinite-upgrade-card * {
+    will-change: transform;
+}
+
+.infinite-upgrades-toggle {
+    will-change: transform, box-shadow;
+}

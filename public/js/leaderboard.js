@@ -46,48 +46,105 @@ class Leaderboard {
             return;
         }
         
-        content.innerHTML = '<div style="text-align:center; padding:2em; color:rgba(255,255,255,0.8);">Loading...</div>';
+        // Show immediate loading feedback with opacity and overlay
+        content.style.position = 'relative';
+        content.style.opacity = '0.7';
         
-        // If we have stored data, render it immediately
-        if (this.latestLeaderboardData) {
-            console.log('🏆 Rendering stored leaderboard data from fetchLeaderboardForTab');
-            this.renderLeaderboard(this.latestLeaderboardData);
-            return;
+        // Remove any existing loading overlay
+        const existingLoading = content.querySelector('#leaderboard-loading');
+        if (existingLoading) {
+            existingLoading.remove();
         }
+        
+        // Create loading overlay
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'leaderboard-loading';
+        loadingOverlay.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 1.5em 2em;
+            border-radius: 0.8em;
+            color: white;
+            font-size: 1.1em;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: pulse 1.5s ease-in-out infinite alternate;
+        `;
+        loadingOverlay.innerHTML = '🏆 Refreshing leaderboard...';
+        
+        // Add pulse animation if it doesn't exist
+        if (!document.querySelector('#leaderboard-pulse-style')) {
+            const style = document.createElement('style');
+            style.id = 'leaderboard-pulse-style';
+            style.textContent = `
+                @keyframes pulse {
+                    from { opacity: 0.8; }
+                    to { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        content.appendChild(loadingOverlay);
+        
+        // Clear any cached data to force fresh fetch
+        this.latestLeaderboardData = null;
         
         // Make sure callback is set up before requesting data
         this.setupWebSocketCallbacks();
         
-        // Force save and request fresh data
+        // Force save current player state and request fresh data
         console.log('🏆 Forcing game state save before leaderboard refresh...');
         if (window.game && window.game.saveGameState) {
             // Use the game's save method which has all the proper parameters
             window.game.saveGameState();
         }
         
-        // Small delay then request leaderboard
+        // Small delay then request fresh leaderboard data
         setTimeout(() => {
             console.log('🏆 Requesting fresh leaderboard data...');
             console.log('🏆 wsClient exists:', !!window.wsClient);
             console.log('🏆 wsClient isConnected:', window.wsClient?.isConnected);
             
             if (window.wsClient && window.wsClient.isConnected) {
-                console.log('🏆 Calling wsClient.requestLeaderboard()...');
+                console.log('🏆 Calling wsClient.requestLeaderboard() for fresh data...');
+                // Request fresh leaderboard data (this should trigger server to rebuild leaderboard)
                 window.wsClient.requestLeaderboard();
             } else {
                 console.error('🏆 wsClient not available or not connected!');
+                this.clearLeaderboardLoading();
             }
         }, 100);
     }
     
+    // Clear loading state when leaderboard data is received
+    clearLeaderboardLoading() {
+        const content = document.querySelector('#leaderboardContent');
+        const loading = document.querySelector('#leaderboard-loading');
+        
+        if (content) {
+            content.style.opacity = '1';
+            content.style.position = 'static';
+        }
+        if (loading) {
+            loading.remove();
+        }
+    }
+    
     formatLargeNumber(number) {
-        if (number < 1000000000) { // Less than 1 billion (9 digits)
-            return number.toLocaleString();
+        // Convert to integer first to remove decimals
+        const intNumber = Math.floor(number);
+        
+        if (intNumber < 1000000000000) { // Less than 1 trillion (12 digits)
+            return intNumber.toLocaleString(); // Normal formatting with commas: 19,095,694
         }
         
-        // Convert to scientific notation for large numbers
-        const exponent = Math.floor(Math.log10(number));
-        const mantissa = number / Math.pow(10, exponent);
+        // Convert to scientific notation for very large numbers (1 trillion+)
+        const exponent = Math.floor(Math.log10(intNumber));
+        const mantissa = intNumber / Math.pow(10, exponent);
         
         // Format mantissa to 3 significant digits
         const formattedMantissa = mantissa.toFixed(2);
@@ -106,6 +163,9 @@ class Leaderboard {
     
     renderLeaderboard(leaderboardData) {
         console.log('🏆 Looking for leaderboardContent element...');
+        
+        // Clear loading state immediately when we receive data
+        this.clearLeaderboardLoading();
         
         // Debug: Show all elements in the document
         console.log('🏆 All elements with ID containing "leaderboard":', 
@@ -314,7 +374,42 @@ class Leaderboard {
 // Initialize leaderboard when DOM is loaded
 window.addEventListener('DOMContentLoaded', () => {
     window.leaderboard = new Leaderboard();
+    
+    // Set up leaderboard tab click handler for fresh data
+    const setupLeaderboardTabHandler = () => {
+        // Look for leaderboard tab button/link
+        const leaderboardTab = document.querySelector('[data-tab="leaderboard"]') || 
+                              document.querySelector('#leaderboardTab') ||
+                              document.querySelector('[onclick*="leaderboard"]') ||
+                              document.querySelector('a[href*="leaderboard"]') ||
+                              document.querySelector('button[data-target="leaderboard"]');
+        
+        if (leaderboardTab) {
+            console.log('🏆 Found leaderboard tab element, setting up click handler');
+            leaderboardTab.addEventListener('click', (e) => {
+                console.log('🏆 Leaderboard tab clicked, forcing fresh data fetch');
+                // Small delay to let tab switching complete first
+                setTimeout(() => {
+                    window.leaderboard.fetchLeaderboardForTab();
+                }, 50);
+            });
+        } else {
+            console.log('🏆 Leaderboard tab element not found, trying again in 500ms');
+            // If tab isn't found, try again after a delay (common with dynamic content)
+            setTimeout(setupLeaderboardTabHandler, 500);
+        }
+    };
+    
+    // Set up the handler
+    setupLeaderboardTabHandler();
 });
+
+// Also expose a global function for manual triggering
+window.refreshLeaderboard = () => {
+    if (window.leaderboard) {
+        window.leaderboard.fetchLeaderboardForTab();
+    }
+};
 
 // Export for use in other modules
 window.Leaderboard = Leaderboard;
