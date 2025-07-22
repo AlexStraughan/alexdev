@@ -1,5 +1,16 @@
 /* Enhanced Infinite Upgrades Manager Styles */
 
+/* Ensure generator cards maintain their original blue styling */
+#skillsGrid .skill-card.affordable {
+    border-color: rgba(79, 172, 254, 0.7) !important;
+    box-shadow: 0 0 15px rgba(79, 172, 254, 0.3) !important;
+}
+
+#skillsGrid .skill-card.affordable:hover {
+    border-color: rgba(79, 172, 254, 0.9) !important;
+    box-shadow: 0 0 25px rgba(79, 172, 254, 0.5) !important;
+}
+
 /* Infinite upgrade cards special styling */
 .infinite-upgrade-card {
     position: relative;
@@ -47,15 +58,15 @@
     100% { background-position: 200% 0; }
 }
 
-/* Toggle button styles */
+/* Toggle button styles - inline with heading */
 .infinite-upgrades-toggle {
     font-family: 'Arial', sans-serif;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
 
 .infinite-upgrades-toggle:active {
     transform: translateY(0) scale(0.98) !important;
-    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.6) !important;
+    box-shadow: 0 1px 4px rgba(255, 107, 107, 0.6) !important;
 }
 
 /* Hidden state animations */
@@ -80,14 +91,14 @@
     transform: translateY(-5px) !important;
 }
 
-/* Affordable infinite upgrades get extra glow */
-.infinite-upgrade-card.affordable {
+/* Affordable infinite upgrades get extra glow - ONLY for infinite upgrade cards */
+.infinite-upgrade-card.skill-card.affordable {
     box-shadow: 0 0 20px rgba(255, 107, 107, 0.4),
                 0 0 40px rgba(255, 107, 107, 0.2) !important;
     border-color: rgba(255, 107, 107, 0.7) !important;
 }
 
-.infinite-upgrade-card.affordable:hover {
+.infinite-upgrade-card.skill-card.affordable:hover {
     box-shadow: 0 0 30px rgba(255, 107, 107, 0.6),
                 0 0 60px rgba(255, 107, 107, 0.3),
                 0 8px 25px rgba(255, 107, 107, 0.4) !important;

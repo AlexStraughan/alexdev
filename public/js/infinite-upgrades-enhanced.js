@@ -81,38 +81,36 @@ class InfiniteUpgradesManager {
         this.toggleButton.innerHTML = this.isHidden ? '🙈 Show Infinite Upgrades' : '👁️ Hide Infinite Upgrades';
         this.toggleButton.className = 'infinite-upgrades-toggle';
         
-        // Styling
+        // Styling for inline placement next to heading
         Object.assign(this.toggleButton.style, {
-            position: 'fixed',
-            top: '60px',
-            right: '20px',
-            zIndex: '1001',
+            display: 'inline-block',
+            marginLeft: '15px',
             background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)',
             color: 'white',
             border: 'none',
-            padding: '10px 15px',
-            borderRadius: '8px',
+            padding: '6px 12px',
+            borderRadius: '6px',
             cursor: 'pointer',
-            fontSize: '12px',
+            fontSize: '11px',
             fontWeight: 'bold',
-            boxShadow: '0 4px 15px rgba(255, 107, 107, 0.4)',
+            boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            backdropFilter: 'blur(10px)',
-            userSelect: 'none'
+            userSelect: 'none',
+            verticalAlign: 'middle'
         });
 
         // Hover effects
         this.toggleButton.addEventListener('mouseenter', () => {
             Object.assign(this.toggleButton.style, {
-                transform: 'translateY(-2px) scale(1.05)',
-                boxShadow: '0 6px 20px rgba(255, 107, 107, 0.6)'
+                transform: 'translateY(-1px) scale(1.03)',
+                boxShadow: '0 4px 12px rgba(255, 107, 107, 0.5)'
             });
         });
 
         this.toggleButton.addEventListener('mouseleave', () => {
             Object.assign(this.toggleButton.style, {
                 transform: 'translateY(0) scale(1)',
-                boxShadow: '0 4px 15px rgba(255, 107, 107, 0.4)'
+                boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
             });
         });
 
@@ -122,8 +120,61 @@ class InfiniteUpgradesManager {
             this.toggleInfiniteUpgrades();
         });
 
-        document.body.appendChild(this.toggleButton);
-        console.log('✅ Toggle button created');
+        // Find the upgrades tab heading and add button next to it
+        this.addButtonToUpgradesHeading();
+        
+        console.log('✅ Toggle button created next to upgrades heading');
+    }
+
+    addButtonToUpgradesHeading() {
+        // Wait for the upgrades tab to exist
+        const findAndAddButton = () => {
+            // Look for the upgrades tab heading
+            const upgradesTab = document.querySelector('#upgrades');
+            if (upgradesTab) {
+                const heading = upgradesTab.querySelector('h3');
+                if (heading && heading.textContent.includes('Upgrades')) {
+                    // Create a container for the heading and button
+                    const headerContainer = document.createElement('div');
+                    headerContainer.style.cssText = 'display: flex; align-items: center; margin-bottom: 1rem;';
+                    
+                    // Move the heading into the container
+                    const headingClone = heading.cloneNode(true);
+                    headingClone.style.margin = '0';
+                    
+                    headerContainer.appendChild(headingClone);
+                    headerContainer.appendChild(this.toggleButton);
+                    
+                    // Replace the original heading
+                    heading.parentNode.replaceChild(headerContainer, heading);
+                    
+                    console.log('✅ Button added next to Upgrades heading');
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        // Try immediately
+        if (!findAndAddButton()) {
+            // If not found, try again after DOM is ready
+            const observer = new MutationObserver(() => {
+                if (findAndAddButton()) {
+                    observer.disconnect();
+                }
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+            
+            // Stop trying after 5 seconds
+            setTimeout(() => {
+                observer.disconnect();
+                console.warn('⚠️ Could not find upgrades heading, button not added');
+            }, 5000);
+        }
     }
 
     startMonitoring() {
