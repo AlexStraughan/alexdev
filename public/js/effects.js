@@ -34,6 +34,11 @@ class Effects {
         shakableElements.forEach(element => {
             if (!element) return;
             
+            // Skip elements that contain our infinite upgrades toggle
+            if (element.querySelector('.infinite-upgrades-toggle')) {
+                return;
+            }
+            
             // Force remove any existing animation
             element.style.animation = 'none';
             element.style.transform = 'translate(0, 0)';

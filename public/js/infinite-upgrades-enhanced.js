@@ -8,6 +8,8 @@ class InfiniteUpgradesManager {
         this.game = null;
         this.toggleButton = null;
         this.infiniteCards = new Set();
+        this.isToggling = false; // Prevent rapid toggling
+        this.lastToggleTime = 0;
         
         this.initialize();
     }
@@ -114,9 +116,19 @@ class InfiniteUpgradesManager {
             });
         });
 
-        // Click handler
+        // Click handler with debouncing
         this.toggleButton.addEventListener('click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
+            
+            // Prevent rapid clicking (debounce 300ms)
+            const now = Date.now();
+            if (this.isToggling || now - this.lastToggleTime < 300) {
+                console.log('🔒 Toggle blocked - too soon after last toggle');
+                return;
+            }
+            
+            this.lastToggleTime = now;
             this.toggleInfiniteUpgrades();
         });
 
@@ -295,15 +307,32 @@ class InfiniteUpgradesManager {
     }
 
     toggleInfiniteUpgrades() {
-        if (this.isHidden) {
-            this.showInfiniteUpgrades();
-        } else {
-            this.hideInfiniteUpgrades();
+        // Prevent concurrent toggles
+        if (this.isToggling) {
+            console.log('🔒 Toggle already in progress');
+            return;
         }
         
-        this.isHidden = !this.isHidden;
-        this.saveState();
-        this.updateToggleButton();
+        this.isToggling = true;
+        
+        try {
+            if (this.isHidden) {
+                this.showInfiniteUpgrades();
+            } else {
+                this.hideInfiniteUpgrades();
+            }
+            
+            this.isHidden = !this.isHidden;
+            this.saveState();
+            this.updateToggleButton();
+        } catch (error) {
+            console.error('❌ Error during toggle:', error);
+        } finally {
+            // Release toggle lock after a short delay
+            setTimeout(() => {
+                this.isToggling = false;
+            }, 100);
+        }
     }
 
     hideInfiniteUpgrades() {
@@ -311,7 +340,7 @@ class InfiniteUpgradesManager {
             card.style.display = 'none';
             card.classList.add('infinite-hidden');
         });
-        console.log('🙈 Infinite upgrades hidden');
+        // Reduced logging
     }
 
     showInfiniteUpgrades() {
@@ -319,7 +348,7 @@ class InfiniteUpgradesManager {
             card.style.display = '';
             card.classList.remove('infinite-hidden');
         });
-        console.log('👁️ Infinite upgrades shown');
+        // Reduced logging
     }
 
     updateToggleButton() {

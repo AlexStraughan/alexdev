@@ -1,5 +1,15 @@
 /* Enhanced Infinite Upgrades Manager Styles */
 
+/* Protect elements from screen shake effects */
+.infinite-upgrades-toggle,
+.infinite-upgrades-toggle * {
+    /* Isolate from parent transforms (screen shake) */
+    transform-style: preserve-3d !important;
+    backface-visibility: hidden !important;
+    /* Create new stacking context to avoid interference */
+    isolation: isolate !important;
+}
+
 /* Ensure generator cards maintain their original blue styling */
 #skillsGrid .skill-card.affordable {
     border-color: rgba(79, 172, 254, 0.7) !important;
@@ -62,6 +72,10 @@
 .infinite-upgrades-toggle {
     font-family: 'Arial', sans-serif;
     letter-spacing: 0.3px;
+    /* Prevent screen shake from affecting the button */
+    transform-origin: center !important;
+    will-change: transform;
+    position: relative !important;
 }
 
 .infinite-upgrades-toggle:active {
