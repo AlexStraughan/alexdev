@@ -166,6 +166,28 @@ window.fixInfiniteUpgrades = function() {
     console.log('🎯 Try running debugInfiniteUpgrades() to see if issues are resolved');
 };
 
+// Test save/load of infinite upgrades
+window.testInfiniteUpgradesSave = function() {
+    if (!window.game) {
+        console.error('Game not found!');
+        return;
+    }
+    
+    console.log('🧪 Testing infinite upgrades save/load...');
+    console.log('Current infinite upgrades:', window.game.state.infiniteUpgrades);
+    
+    // Force save
+    window.game.saveGameState();
+    console.log('✅ Save triggered');
+    
+    // Check what would be saved
+    const stateToCheck = {
+        ...window.game.state,
+        infiniteUpgrades: window.game.state.infiniteUpgrades || {}
+    };
+    console.log('💾 Infinite upgrades in save data:', stateToCheck.infiniteUpgrades);
+};
+
 // Auto-run a quick check when this script loads
 setTimeout(() => {
     if (window.game && document.getElementById('upgradesGrid')) {

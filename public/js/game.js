@@ -694,6 +694,15 @@ class Game {
                         // Only merge if this is actually existing data, not default
                         if (data.points > 0 || data.total_clicks > 0 || Object.keys(data.generators || {}).length > 0) {
                             this.state = { ...this.state, ...data };
+                            
+                            // Ensure infinite upgrades are properly loaded
+                            if (data.infiniteUpgrades && typeof data.infiniteUpgrades === 'object') {
+                                this.state.infiniteUpgrades = { ...data.infiniteUpgrades };
+                                console.log('🔧 Infinite upgrades loaded:', this.state.infiniteUpgrades);
+                            } else {
+                                console.log('⚠️ No infinite upgrades data found in server response');
+                            }
+                            
                             console.log('Game state loaded from server:', this.state);
                         } else {
                             console.log('Using default state for new player (server returned empty state)');
@@ -776,6 +785,9 @@ class Game {
         this.state.achievements = Array.isArray(this.state.achievements) ? this.state.achievements : [];
         this.state.recentClicks = Array.isArray(this.state.recentClicks) ? this.state.recentClicks : [];
         
+        // Debug infinite upgrades validation
+        console.log('🔧 Infinite upgrades after validation:', this.state.infiniteUpgrades);
+        
         // Sanitize generator counts
         Object.keys(this.state.generators).forEach(genId => {
             const count = this.state.generators[genId];
@@ -810,6 +822,8 @@ class Game {
             const stateToSave = {
                 ...this.state,
                 player_name: this.isRegistered ? this.playerName : null,
+                // Ensure infinite upgrades are explicitly included
+                infiniteUpgrades: this.state.infiniteUpgrades || {},
                 // Convert camelCase to snake_case for server compatibility
                 total_points_earned: this.state.totalPointsEarned,
                 total_clicks: this.state.totalClicks,
@@ -824,6 +838,11 @@ class Game {
             
             // Check if WebSocket client is available and connected
             if (window.wsClient && window.wsClient.isConnected) {
+                // Debug: Log what we're saving
+                if (Object.keys(stateToSave.infiniteUpgrades || {}).length > 0) {
+                    console.log('💾 Saving infinite upgrades:', stateToSave.infiniteUpgrades);
+                }
+                
                 window.wsClient.saveGameState(this.playerId, stateToSave);
                 console.log('Game state save requested via WebSocket');
             } else {

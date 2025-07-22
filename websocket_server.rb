@@ -66,6 +66,14 @@ class GameWebSocketServer
     rescue SQLite3::SQLException => e
       # Column already exists, ignore
     end
+    
+    # Add infinite upgrades column if it doesn't exist
+    begin
+      @db.execute("ALTER TABLE game_states ADD COLUMN infinite_upgrades TEXT DEFAULT '{}'")
+      puts "✅ Added infinite_upgrades column to database"
+    rescue SQLite3::SQLException => e
+      # Column already exists, ignore
+    end
 
     # Chat messages table
     @db.execute <<-SQL
@@ -151,6 +159,7 @@ class GameWebSocketServer
         critMultiplier: 2,                  # Convert to camelCase
         generators: {},
         upgrades: {},
+        infiniteUpgrades: {},               # Add infinite upgrades
         achievements: [],
         gameHubRevealed: false,             # Convert to camelCase
         upgradesTabUnlocked: false,         # Convert to camelCase
@@ -176,7 +185,8 @@ class GameWebSocketServer
         gameHubRevealed: row[12] == 1,      # Convert to camelCase
         upgradesTabUnlocked: row[13] == 1,  # Convert to camelCase
         lastActiveTime: row[14] || 0,       # Convert to camelCase
-        offlineEarningsRate: row[15] || 0.4 # Convert to camelCase
+        offlineEarningsRate: row[15] || 0.4, # Convert to camelCase
+        infiniteUpgrades: JSON.parse(row[19] || '{}')  # Add infinite upgrades
       }
     end
 
@@ -186,12 +196,17 @@ class GameWebSocketServer
     }
     
     puts "🎮 Sending game state response"
+    puts "🎮 Infinite upgrades in response: #{state[:infiniteUpgrades]}"
     send_to_client(player_id, response)
   end
 
   def handle_save_game_state(player_id, message)
     game_player_id = message['game_player_id']
     state = message['state']
+    
+    # Debug logging for infinite upgrades
+    puts "💾 Saving game state for player: #{game_player_id}"
+    puts "💾 Infinite upgrades data: #{state['infiniteUpgrades']}"
     
     begin
       # Use transaction with retry for better reliability
@@ -202,7 +217,7 @@ class GameWebSocketServer
         if existing.empty?
           # Insert new player state
           @db.execute(
-            "INSERT INTO game_states (player_id, player_name, points, total_clicks, total_points_earned, click_power, crit_chance, crit_multiplier, generators, upgrades, achievements, game_hub_revealed, upgrades_tab_unlocked, last_active_time, offline_earnings_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO game_states (player_id, player_name, points, total_clicks, total_points_earned, click_power, crit_chance, crit_multiplier, generators, upgrades, achievements, game_hub_revealed, upgrades_tab_unlocked, last_active_time, offline_earnings_rate, infinite_upgrades) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
               game_player_id,
               state['player_name'],
@@ -218,13 +233,14 @@ class GameWebSocketServer
               state['game_hub_revealed'] ? 1 : 0,
               state['upgrades_tab_unlocked'] ? 1 : 0,
               state['last_active_time'] || 0,
-              state['offline_earnings_rate'] || 0.4
+              state['offline_earnings_rate'] || 0.4,
+              JSON.generate(state['infiniteUpgrades'] || {})
             ]
           )
         else
           # Update existing player state
           @db.execute(
-            "UPDATE game_states SET player_name = ?, points = ?, total_clicks = ?, total_points_earned = ?, click_power = ?, crit_chance = ?, crit_multiplier = ?, generators = ?, upgrades = ?, achievements = ?, game_hub_revealed = ?, upgrades_tab_unlocked = ?, last_active_time = ?, offline_earnings_rate = ?, updated_at = CURRENT_TIMESTAMP WHERE player_id = ?",
+            "UPDATE game_states SET player_name = ?, points = ?, total_clicks = ?, total_points_earned = ?, click_power = ?, crit_chance = ?, crit_multiplier = ?, generators = ?, upgrades = ?, achievements = ?, game_hub_revealed = ?, upgrades_tab_unlocked = ?, last_active_time = ?, offline_earnings_rate = ?, infinite_upgrades = ?, updated_at = CURRENT_TIMESTAMP WHERE player_id = ?",
             [
               state['player_name'],
               state['points'] || 0,
@@ -240,6 +256,7 @@ class GameWebSocketServer
               state['upgrades_tab_unlocked'] ? 1 : 0,
               state['last_active_time'] || 0,
               state['offline_earnings_rate'] || 0.4,
+              JSON.generate(state['infiniteUpgrades'] || {}),
               game_player_id
             ]
           )

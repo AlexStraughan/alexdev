@@ -34,8 +34,12 @@ class Effects {
         shakableElements.forEach(element => {
             if (!element) return;
             
-            // Skip elements that contain our infinite upgrades toggle
-            if (element.querySelector('.infinite-upgrades-toggle')) {
+            // Skip elements that contain our infinite upgrades toggle or other UI controls
+            if (element.querySelector('.infinite-upgrades-toggle') ||
+                element.querySelector('#infiniteUpgradesToggle') ||
+                element.closest('.infinite-upgrades-toggle') ||
+                element.id === 'infiniteUpgradesToggle' ||
+                element.classList.contains('infinite-upgrades-toggle')) {
                 return;
             }
             

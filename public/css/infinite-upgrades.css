@@ -1,13 +1,31 @@
 /* Enhanced Infinite Upgrades Manager Styles */
 
-/* Protect elements from screen shake effects */
+/* Strong protection from screen shake and other effects */
 .infinite-upgrades-toggle,
-.infinite-upgrades-toggle * {
-    /* Isolate from parent transforms (screen shake) */
+.infinite-upgrades-toggle *,
+*[id*="infiniteUpgradesToggle"],
+*[class*="infinite-upgrades-toggle"] {
+    /* Completely isolate from parent transforms */
     transform-style: preserve-3d !important;
     backface-visibility: hidden !important;
-    /* Create new stacking context to avoid interference */
     isolation: isolate !important;
+    /* Override any shake animations */
+    animation: none !important;
+    /* Fix position */
+    position: relative !important;
+    /* Prevent interference */
+    z-index: 9999 !important;
+    /* Override transforms */
+    transform: none !important;
+}
+
+/* Additional shake protection */
+@keyframes noShake {
+    0%, 100% { transform: none !important; }
+}
+
+.infinite-upgrades-toggle {
+    animation: noShake 0s infinite !important;
 }
 
 /* Ensure generator cards maintain their original blue styling */
@@ -188,4 +206,54 @@
 
 .infinite-upgrades-toggle {
     will-change: transform, box-shadow;
+}
+
+/* Screen shake immunity for infinite upgrades toggle button */
+.infinite-upgrades-toggle,
+#infiniteUpgradesToggle,
+[data-infinite-upgrades-toggle],
+.infinite-upgrades-toggle *,
+#infiniteUpgradesToggle *,
+[data-infinite-upgrades-toggle] * {
+    /* Complete transform immunity */
+    transform: none !important;
+    animation: none !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+    
+    /* Create isolation barrier */
+    contain: layout style paint !important;
+    transform-style: flat !important;
+    will-change: auto !important;
+    
+    /* Force highest z-index and positioning */
+    position: relative !important;
+    z-index: 999999 !important;
+    
+    /* Prevent parent transform inheritance */
+    isolation: isolate !important;
+    transform-origin: center center !important;
+    transform-box: border-box !important;
+    
+    /* Force repaint to override shake effects */
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+}
+
+/* Override any shake keyframe specifically targeting our elements */
+@keyframes shake {
+    0%, 10%, 20%, 30%, 40%, 50%, 60%, 70%, 80%, 90%, 100% { 
+        .infinite-upgrades-toggle,
+        #infiniteUpgradesToggle,
+        [data-infinite-upgrades-toggle] {
+            transform: none !important;
+            position: relative !important;
+        }
+    }
+}
+
+/* Extra protection layer for click interactions */
+.infinite-upgrades-toggle:hover,
+.infinite-upgrades-toggle:active {
+    transform: none !important;
+    animation: none !important;
 }
