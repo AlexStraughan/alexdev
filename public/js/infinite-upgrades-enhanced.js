@@ -186,9 +186,59 @@ class InfiniteUpgradesManager {
             return;
         }
 
+        // Throttle the update function to prevent spam
+        let updateTimeout = null;
+        let lastCardCount = 0;
+        
+        const throttledUpdate = () => {
+            if (updateTimeout) {
+                clearTimeout(updateTimeout);
+            }
+            
+            updateTimeout = setTimeout(() => {
+                const currentCardCount = upgradesGrid.querySelectorAll('.skill-card[data-upgrade-id]').length;
+                
+                // Only update if the number of cards actually changed
+                if (currentCardCount !== lastCardCount) {
+                    lastCardCount = currentCardCount;
+                    this.updateInfiniteCards();
+                }
+                
+                updateTimeout = null;
+            }, 250); // Wait 250ms before updating
+        };
+
         // Use MutationObserver to detect when upgrades are re-rendered
-        this.observer = new MutationObserver(() => {
-            this.updateInfiniteCards();
+        this.observer = new MutationObserver((mutations) => {
+            // Check if any mutations actually involve upgrade cards
+            let hasUpgradeChanges = false;
+            
+            mutations.forEach(mutation => {
+                if (mutation.type === 'childList') {
+                    // Check if added or removed nodes contain upgrade cards
+                    const checkNodes = (nodes) => {
+                        for (let node of nodes) {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                if (node.classList?.contains('skill-card') || 
+                                    node.querySelector?.('.skill-card[data-upgrade-id]') ||
+                                    node.getAttribute?.('data-upgrade-id')) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    };
+                    
+                    if (checkNodes(mutation.addedNodes) || checkNodes(mutation.removedNodes)) {
+                        hasUpgradeChanges = true;
+                    }
+                }
+            });
+            
+            // Only trigger update if there were actual upgrade-related changes
+            if (hasUpgradeChanges) {
+                throttledUpdate();
+            }
         });
 
         this.observer.observe(upgradesGrid, {
@@ -196,7 +246,7 @@ class InfiniteUpgradesManager {
             subtree: true
         });
 
-        // Initial update
+        // Initial update with delay
         setTimeout(() => this.updateInfiniteCards(), 500);
     }
 
@@ -205,6 +255,9 @@ class InfiniteUpgradesManager {
 
         const upgradesGrid = document.getElementById('upgradesGrid');
         if (!upgradesGrid) return;
+
+        // Store previous count to avoid redundant logging
+        const previousCount = this.infiniteCards.size;
 
         // Clear previous set
         this.infiniteCards.clear();
@@ -230,7 +283,10 @@ class InfiniteUpgradesManager {
             }
         });
 
-        console.log(`🔧 Found ${this.infiniteCards.size} infinite upgrade cards`);
+        // Only log if the count actually changed
+        if (this.infiniteCards.size !== previousCount) {
+            console.log(`🔧 Found ${this.infiniteCards.size} infinite upgrade cards (was ${previousCount})`);
+        }
 
         // Apply current visibility state
         if (this.isHidden) {

@@ -169,18 +169,21 @@ window.fixInfiniteUpgrades = function() {
 // Auto-run a quick check when this script loads
 setTimeout(() => {
     if (window.game && document.getElementById('upgradesGrid')) {
-        console.log('🚀 Infinite upgrades debugging tools loaded! Use:');
-        console.log('   • debugInfiniteUpgrades() - Full diagnostic');
-        console.log('   • fixInfiniteUpgrades() - Quick fixes');
-        console.log('   • Ctrl+Shift+I - Toggle debug mode in manager');
+        console.log('%c🚀 Infinite upgrades debugging tools loaded!', 'color: #4facfe; font-weight: bold;');
+        console.log('%cAvailable commands:', 'color: #666; font-size: 12px;');
+        console.log('%c  • debugInfiniteUpgrades() - Full diagnostic', 'color: #888; font-size: 11px;');
+        console.log('%c  • fixInfiniteUpgrades() - Quick fixes', 'color: #888; font-size: 11px;');
+        console.log('%c  • Ctrl+Shift+I - Toggle debug mode in manager', 'color: #888; font-size: 11px;');
         
-        // Quick status
+        // Quick status (only show if there are issues)
         const infiniteCount = window.game.upgradeData.filter(u => u.isInfinite).length;
         const unlockedCount = window.game.upgradeData.filter(u => 
             u.isInfinite && window.game.checkUnlockCondition(u.unlockCondition)
         ).length;
         
-        console.log(`📊 Quick Status: ${unlockedCount}/${infiniteCount} infinite upgrades unlocked`);
+        if (unlockedCount < infiniteCount) {
+            console.log(`%c📊 Status: ${unlockedCount}/${infiniteCount} infinite upgrades unlocked`, 'color: #ff6b6b; font-size: 11px;');
+        }
     }
 }, 2000);
 
