@@ -1728,9 +1728,9 @@ class Game {
             
             // Show floating number with crit styling
             if (isCrit) {
-                window.ui.createFloatingNumber(`CRIT! +${clickDamage}`, '#ff6b6b');
+                window.ui.createFloatingNumber(`CRIT! +${this.formatNumber(clickDamage)}`, '#ff6b6b');
             } else {
-                window.ui.createFloatingNumber(`+${clickDamage}`, '#00f2fe');
+                window.ui.createFloatingNumber(`+${this.formatNumber(clickDamage)}`, '#00f2fe');
             }
             
             // Update greeting from cache (no API call needed)
