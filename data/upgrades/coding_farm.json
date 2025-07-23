@@ -18,5 +18,85 @@
     "affects": "coding_farm",
     "multiplier": 4,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "hydroponic_setup" }
+  },
+  { 
+    "id": "solar_panels",
+    "name": "Solar Panel Array", 
+    "cost": 1200000000,
+    "description": "Doubles Coding Farm output",
+    "icon": "☀️",
+    "affects": "coding_farm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "automation_drones" }
+  },
+  { 
+    "id": "climate_control",
+    "name": "Climate Control System", 
+    "cost": 6000000000,
+    "description": "Doubles Coding Farm output",
+    "icon": "🌡️",
+    "affects": "coding_farm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "solar_panels" }
+  },
+  { 
+    "id": "nutrient_optimization",
+    "name": "Nutrient Optimization", 
+    "cost": 30000000000,
+    "description": "Triples Coding Farm output",
+    "icon": "🧪",
+    "affects": "coding_farm",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "climate_control" }
+  },
+  { 
+    "id": "genetic_modification",
+    "name": "Genetic Modification", 
+    "cost": 150000000000,
+    "description": "Doubles Coding Farm output",
+    "icon": "🧬",
+    "affects": "coding_farm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "nutrient_optimization" }
+  },
+  { 
+    "id": "vertical_farming",
+    "name": "Vertical Farming", 
+    "cost": 750000000000,
+    "description": "Doubles Coding Farm output",
+    "icon": "🏗️",
+    "affects": "coding_farm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "genetic_modification" }
+  },
+  { 
+    "id": "nano_fertilizers",
+    "name": "Nano Fertilizers", 
+    "cost": 3750000000000,
+    "description": "Quadruples Coding Farm output",
+    "icon": "⚛️",
+    "affects": "coding_farm",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "vertical_farming" }
+  },
+  { 
+    "id": "bio_processors",
+    "name": "Bio-Processors", 
+    "cost": 18750000000000,
+    "description": "Doubles Coding Farm output",
+    "icon": "🧠",
+    "affects": "coding_farm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "nano_fertilizers" }
+  },
+  { 
+    "id": "synthetic_biology",
+    "name": "Synthetic Biology", 
+    "cost": 93750000000000,
+    "description": "Quintuples Coding Farm output",
+    "icon": "🔬",
+    "affects": "coding_farm",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "bio_processors" }
   }
 ]

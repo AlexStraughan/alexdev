@@ -18,5 +18,85 @@
     "affects": "ai_assistant",
     "multiplier": 3,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "neural_optimization" }
+  },
+  { 
+    "id": "machine_learning",
+    "name": "Machine Learning Module", 
+    "cost": 6000000,
+    "description": "Doubles AI Assistant output",
+    "icon": "🎯",
+    "affects": "ai_assistant",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "consciousness_upgrade" }
+  },
+  { 
+    "id": "data_mining",
+    "name": "Data Mining Protocols", 
+    "cost": 30000000,
+    "description": "Doubles AI Assistant output",
+    "icon": "⛏️",
+    "affects": "ai_assistant",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "machine_learning" }
+  },
+  { 
+    "id": "natural_language",
+    "name": "Natural Language Processing", 
+    "cost": 150000000,
+    "description": "Triples AI Assistant output",
+    "icon": "💬",
+    "affects": "ai_assistant",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "data_mining" }
+  },
+  { 
+    "id": "computer_vision",
+    "name": "Computer Vision", 
+    "cost": 750000000,
+    "description": "Doubles AI Assistant output",
+    "icon": "👁️",
+    "affects": "ai_assistant",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "natural_language" }
+  },
+  { 
+    "id": "reinforcement_learning",
+    "name": "Reinforcement Learning", 
+    "cost": 3750000000,
+    "description": "Doubles AI Assistant output",
+    "icon": "🎮",
+    "affects": "ai_assistant",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "computer_vision" }
+  },
+  { 
+    "id": "general_intelligence",
+    "name": "General Intelligence", 
+    "cost": 18750000000,
+    "description": "Quadruples AI Assistant output",
+    "icon": "🧠",
+    "affects": "ai_assistant",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "reinforcement_learning" }
+  },
+  { 
+    "id": "superintelligence",
+    "name": "Superintelligence", 
+    "cost": 93750000000,
+    "description": "Doubles AI Assistant output",
+    "icon": "🌟",
+    "affects": "ai_assistant",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "general_intelligence" }
+  },
+  { 
+    "id": "ai_singularity",
+    "name": "AI Singularity", 
+    "cost": 468750000000,
+    "description": "Quintuples AI Assistant output",
+    "icon": "♾️",
+    "affects": "ai_assistant",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "superintelligence" }
   }
 ]

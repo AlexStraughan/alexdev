@@ -18,5 +18,85 @@
     "affects": "time_machine",
     "multiplier": 3,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "temporal_stabilizer" }
+  },
+  { 
+    "id": "chronometer_array",
+    "name": "Chronometer Array", 
+    "cost": 49000000000000,
+    "description": "Doubles Time Machine output",
+    "icon": "⏱️",
+    "affects": "time_machine",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "paradox_resolver" }
+  },
+  { 
+    "id": "temporal_anchors",
+    "name": "Temporal Anchors", 
+    "cost": 245000000000000,
+    "description": "Doubles Time Machine output",
+    "icon": "⚓",
+    "affects": "time_machine",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "chronometer_array" }
+  },
+  { 
+    "id": "causality_loop",
+    "name": "Causality Loop", 
+    "cost": 1225000000000000,
+    "description": "Triples Time Machine output",
+    "icon": "🔄",
+    "affects": "time_machine",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "temporal_anchors" }
+  },
+  { 
+    "id": "time_dilation",
+    "name": "Time Dilation Field", 
+    "cost": 6125000000000000,
+    "description": "Doubles Time Machine output",
+    "icon": "🌀",
+    "affects": "time_machine",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "causality_loop" }
+  },
+  { 
+    "id": "multiverse_access",
+    "name": "Multiverse Access", 
+    "cost": 30625000000000000,
+    "description": "Doubles Time Machine output",
+    "icon": "🌌",
+    "affects": "time_machine",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "time_dilation" }
+  },
+  { 
+    "id": "temporal_mastery",
+    "name": "Temporal Mastery", 
+    "cost": 153125000000000000,
+    "description": "Quadruples Time Machine output",
+    "icon": "👑",
+    "affects": "time_machine",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "multiverse_access" }
+  },
+  { 
+    "id": "chronos_protocol",
+    "name": "Chronos Protocol", 
+    "cost": 765625000000000000,
+    "description": "Doubles Time Machine output",
+    "icon": "⏰",
+    "affects": "time_machine",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "temporal_mastery" }
+  },
+  { 
+    "id": "eternal_recursion",
+    "name": "Eternal Recursion", 
+    "cost": 3828125000000000000,
+    "description": "Quintuples Time Machine output",
+    "icon": "♾️",
+    "affects": "time_machine",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "chronos_protocol" }
   }
 ]

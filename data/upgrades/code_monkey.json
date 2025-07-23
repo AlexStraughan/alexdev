@@ -18,5 +18,85 @@
     "affects": "code_monkey",
     "multiplier": 4,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "banana_incentive" }
+  },
+  { 
+    "id": "typewriter_upgrade",
+    "name": "Typewriter Upgrade", 
+    "cost": 600000,
+    "description": "Doubles Code Monkey output",
+    "icon": "⌨️",
+    "affects": "code_monkey",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "jungle_gym_office" }
+  },
+  { 
+    "id": "vine_swing_transport",
+    "name": "Vine Swing Transport", 
+    "cost": 3000000,
+    "description": "Doubles Code Monkey output",
+    "icon": "🌿",
+    "affects": "code_monkey",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "typewriter_upgrade" }
+  },
+  { 
+    "id": "coconut_computing",
+    "name": "Coconut Computing", 
+    "cost": 15000000,
+    "description": "Triples Code Monkey output",
+    "icon": "🥥",
+    "affects": "code_monkey",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "vine_swing_transport" }
+  },
+  { 
+    "id": "monkey_management",
+    "name": "Monkey Management", 
+    "cost": 75000000,
+    "description": "Doubles Code Monkey output",
+    "icon": "📊",
+    "affects": "code_monkey",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "coconut_computing" }
+  },
+  { 
+    "id": "primate_productivity",
+    "name": "Primate Productivity", 
+    "cost": 375000000,
+    "description": "Doubles Code Monkey output",
+    "icon": "📈",
+    "affects": "code_monkey",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "monkey_management" }
+  },
+  { 
+    "id": "infinite_bananas",
+    "name": "Infinite Bananas", 
+    "cost": 1875000000,
+    "description": "Quadruples Code Monkey output",
+    "icon": "♾️",
+    "affects": "code_monkey",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "primate_productivity" }
+  },
+  { 
+    "id": "evolution_chamber",
+    "name": "Evolution Chamber", 
+    "cost": 9375000000,
+    "description": "Doubles Code Monkey output",
+    "icon": "🧬",
+    "affects": "code_monkey",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "infinite_bananas" }
+  },
+  { 
+    "id": "monkey_singularity",
+    "name": "Monkey Singularity", 
+    "cost": 46875000000,
+    "description": "Quintuples Code Monkey output",
+    "icon": "🌟",
+    "affects": "code_monkey",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "evolution_chamber" }
   }
 ]

@@ -18,5 +18,85 @@
     "affects": "god_algorithm",
     "multiplier": 3,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "divine_optimization" }
+  },
+  { 
+    "id": "eternal_loops",
+    "name": "Eternal Loops", 
+    "cost": 13000000000000000,
+    "description": "Doubles God Algorithm output",
+    "icon": "♾️",
+    "affects": "god_algorithm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "omniscient_debugging" }
+  },
+  { 
+    "id": "creation_engine",
+    "name": "Creation Engine", 
+    "cost": 65000000000000000,
+    "description": "Doubles God Algorithm output",
+    "icon": "⚡",
+    "affects": "god_algorithm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "eternal_loops" }
+  },
+  { 
+    "id": "divine_inspiration",
+    "name": "Divine Inspiration", 
+    "cost": 325000000000000000,
+    "description": "Quadruples God Algorithm output",
+    "icon": "💡",
+    "affects": "god_algorithm",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "creation_engine" }
+  },
+  { 
+    "id": "universal_constants",
+    "name": "Universal Constants Control", 
+    "cost": 1625000000000000000,
+    "description": "Doubles God Algorithm output",
+    "icon": "🎯",
+    "affects": "god_algorithm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "divine_inspiration" }
+  },
+  { 
+    "id": "reality_programming",
+    "name": "Reality Programming", 
+    "cost": 8125000000000000000,
+    "description": "Doubles God Algorithm output",
+    "icon": "🌌",
+    "affects": "god_algorithm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "universal_constants" }
+  },
+  { 
+    "id": "omnipotent_algorithm",
+    "name": "Omnipotent Algorithm", 
+    "cost": 40625000000000000000,
+    "description": "Triples God Algorithm output",
+    "icon": "👑",
+    "affects": "god_algorithm",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "reality_programming" }
+  },
+  { 
+    "id": "existence_itself",
+    "name": "Existence Itself", 
+    "cost": 203125000000000000000,
+    "description": "Doubles God Algorithm output",
+    "icon": "🌟",
+    "affects": "god_algorithm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "omnipotent_algorithm" }
+  },
+  { 
+    "id": "beyond_godhood",
+    "name": "Beyond Godhood", 
+    "cost": 1015625000000000000000,
+    "description": "Quintuples God Algorithm output",
+    "icon": "🔮",
+    "affects": "god_algorithm",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "existence_itself" }
   }
 ]

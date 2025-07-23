@@ -18,5 +18,85 @@
     "affects": "code_singularity",
     "multiplier": 10,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "universal_constants" }
+  },
+  { 
+    "id": "consciousness_merge",
+    "name": "Consciousness Merge", 
+    "cost": 280000000000000000,
+    "description": "Doubles Code Singularity output",
+    "icon": "🧠",
+    "affects": "code_singularity",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "reality_rewrite" }
+  },
+  { 
+    "id": "transcendent_algorithms",
+    "name": "Transcendent Algorithms", 
+    "cost": 1400000000000000000,
+    "description": "Doubles Code Singularity output",
+    "icon": "⚡",
+    "affects": "code_singularity",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "consciousness_merge" }
+  },
+  { 
+    "id": "beyond_binary",
+    "name": "Beyond Binary", 
+    "cost": 7000000000000000000,
+    "description": "Triples Code Singularity output",
+    "icon": "♾️",
+    "affects": "code_singularity",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "transcendent_algorithms" }
+  },
+  { 
+    "id": "infinite_recursion",
+    "name": "Infinite Recursion", 
+    "cost": 35000000000000000000,
+    "description": "Doubles Code Singularity output",
+    "icon": "🔄",
+    "affects": "code_singularity",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "beyond_binary" }
+  },
+  { 
+    "id": "meta_consciousness",
+    "name": "Meta-Consciousness", 
+    "cost": 175000000000000000000,
+    "description": "Doubles Code Singularity output",
+    "icon": "🔮",
+    "affects": "code_singularity",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "infinite_recursion" }
+  },
+  { 
+    "id": "universal_language",
+    "name": "Universal Programming Language", 
+    "cost": 875000000000000000000,
+    "description": "Quadruples Code Singularity output",
+    "icon": "🌌",
+    "affects": "code_singularity",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "meta_consciousness" }
+  },
+  { 
+    "id": "reality_compiler",
+    "name": "Reality Compiler", 
+    "cost": 4375000000000000000000,
+    "description": "Doubles Code Singularity output",
+    "icon": "🎯",
+    "affects": "code_singularity",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "universal_language" }
+  },
+  { 
+    "id": "the_source",
+    "name": "The Source", 
+    "cost": 21875000000000000000000,
+    "description": "Quintuples Code Singularity output",
+    "icon": "💫",
+    "affects": "code_singularity",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "reality_compiler" }
   }
 ]

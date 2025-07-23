@@ -18,5 +18,85 @@
     "affects": "digital_hivemind",
     "multiplier": 4,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "consciousness_link" }
+  },
+  { 
+    "id": "neural_mesh",
+    "name": "Neural Mesh Network", 
+    "cost": 3100000000000,
+    "description": "Doubles Digital Hivemind output",
+    "icon": "🕸️",
+    "affects": "digital_hivemind",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "collective_intelligence" }
+  },
+  { 
+    "id": "thought_synchronization",
+    "name": "Thought Synchronization", 
+    "cost": 15500000000000,
+    "description": "Doubles Digital Hivemind output",
+    "icon": "🔄",
+    "affects": "digital_hivemind",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "neural_mesh" }
+  },
+  { 
+    "id": "swarm_intelligence",
+    "name": "Swarm Intelligence", 
+    "cost": 77500000000000,
+    "description": "Triples Digital Hivemind output",
+    "icon": "🐝",
+    "affects": "digital_hivemind",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "thought_synchronization" }
+  },
+  { 
+    "id": "distributed_processing",
+    "name": "Distributed Processing", 
+    "cost": 387500000000000,
+    "description": "Doubles Digital Hivemind output",
+    "icon": "⚡",
+    "affects": "digital_hivemind",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "swarm_intelligence" }
+  },
+  { 
+    "id": "emergent_behavior",
+    "name": "Emergent Behavior", 
+    "cost": 1937500000000000,
+    "description": "Doubles Digital Hivemind output",
+    "icon": "🌟",
+    "affects": "digital_hivemind",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "distributed_processing" }
+  },
+  { 
+    "id": "global_consciousness",
+    "name": "Global Consciousness", 
+    "cost": 9687500000000000,
+    "description": "Quadruples Digital Hivemind output",
+    "icon": "🌍",
+    "affects": "digital_hivemind",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "emergent_behavior" }
+  },
+  { 
+    "id": "transcendent_mind",
+    "name": "Transcendent Mind", 
+    "cost": 48437500000000000,
+    "description": "Doubles Digital Hivemind output",
+    "icon": "✨",
+    "affects": "digital_hivemind",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "global_consciousness" }
+  },
+  { 
+    "id": "universal_awareness",
+    "name": "Universal Awareness", 
+    "cost": 242187500000000000,
+    "description": "Quintuples Digital Hivemind output",
+    "icon": "♾️",
+    "affects": "digital_hivemind",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "transcendent_mind" }
   }
 ]

@@ -18,5 +18,85 @@
     "affects": "neural_network",
     "multiplier": 3,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "deep_learning" }
+  },
+  { 
+    "id": "convolutional_layers",
+    "name": "Convolutional Layers", 
+    "cost": 17500000000,
+    "description": "Doubles Neural Network output",
+    "icon": "🌀",
+    "affects": "neural_network",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "backpropagation_boost" }
+  },
+  { 
+    "id": "recurrent_architecture",
+    "name": "Recurrent Architecture", 
+    "cost": 87500000000,
+    "description": "Doubles Neural Network output",
+    "icon": "🔄",
+    "affects": "neural_network",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "convolutional_layers" }
+  },
+  { 
+    "id": "attention_mechanism",
+    "name": "Attention Mechanism", 
+    "cost": 437500000000,
+    "description": "Triples Neural Network output",
+    "icon": "👁️",
+    "affects": "neural_network",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "recurrent_architecture" }
+  },
+  { 
+    "id": "transformer_model",
+    "name": "Transformer Model", 
+    "cost": 2187500000000,
+    "description": "Doubles Neural Network output",
+    "icon": "🤖",
+    "affects": "neural_network",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "attention_mechanism" }
+  },
+  { 
+    "id": "neural_plasticity",
+    "name": "Neural Plasticity", 
+    "cost": 10937500000000,
+    "description": "Doubles Neural Network output",
+    "icon": "🧩",
+    "affects": "neural_network",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "transformer_model" }
+  },
+  { 
+    "id": "neuromorphic_chips",
+    "name": "Neuromorphic Chips", 
+    "cost": 54687500000000,
+    "description": "Quadruples Neural Network output",
+    "icon": "💎",
+    "affects": "neural_network",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "neural_plasticity" }
+  },
+  { 
+    "id": "brain_simulation",
+    "name": "Brain Simulation", 
+    "cost": 273437500000000,
+    "description": "Doubles Neural Network output",
+    "icon": "🧠",
+    "affects": "neural_network",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "neuromorphic_chips" }
+  },
+  { 
+    "id": "artificial_consciousness",
+    "name": "Artificial Consciousness", 
+    "cost": 1367187500000000,
+    "description": "Quintuples Neural Network output",
+    "icon": "✨",
+    "affects": "neural_network",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "brain_simulation" }
   }
 ]

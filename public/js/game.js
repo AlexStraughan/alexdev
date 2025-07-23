@@ -1179,6 +1179,11 @@ class Game {
     startGameLoop() {
         // Main game loop - runs every 100ms
         setInterval(() => {
+            // Only generate points if the page is visible (not tabbed out)
+            if (document.hidden) {
+                return; // Skip point generation when tab is hidden
+            }
+            
             // Validate generator points per second before using it
             const generatorProduction = isFinite(this.state.generatorPointsPerSecond) && !isNaN(this.state.generatorPointsPerSecond) ? 
                 this.state.generatorPointsPerSecond : 0;

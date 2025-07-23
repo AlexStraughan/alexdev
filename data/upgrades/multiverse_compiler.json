@@ -18,5 +18,85 @@
     "affects": "multiverse_compiler",
     "multiplier": 5,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "dimensional_bridge" }
+  },
+  { 
+    "id": "parallel_processing",
+    "name": "Parallel Universe Processing", 
+    "cost": 800000000000000,
+    "description": "Doubles Multiverse Compiler output",
+    "icon": "⚡",
+    "affects": "multiverse_compiler",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "reality_merger" }
+  },
+  { 
+    "id": "infinite_dimensions",
+    "name": "Infinite Dimensions", 
+    "cost": 4000000000000000,
+    "description": "Doubles Multiverse Compiler output",
+    "icon": "♾️",
+    "affects": "multiverse_compiler",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "parallel_processing" }
+  },
+  { 
+    "id": "cosmic_optimization",
+    "name": "Cosmic Optimization", 
+    "cost": 20000000000000000,
+    "description": "Triples Multiverse Compiler output",
+    "icon": "🌟",
+    "affects": "multiverse_compiler",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "infinite_dimensions" }
+  },
+  { 
+    "id": "quantum_entangled_realities",
+    "name": "Quantum Entangled Realities", 
+    "cost": 100000000000000000,
+    "description": "Doubles Multiverse Compiler output",
+    "icon": "🔗",
+    "affects": "multiverse_compiler",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "cosmic_optimization" }
+  },
+  { 
+    "id": "universal_constants",
+    "name": "Universal Constants Manipulation", 
+    "cost": 500000000000000000,
+    "description": "Doubles Multiverse Compiler output",
+    "icon": "📐",
+    "affects": "multiverse_compiler",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_entangled_realities" }
+  },
+  { 
+    "id": "omniversal_compiler",
+    "name": "Omniversal Compiler", 
+    "cost": 2500000000000000000,
+    "description": "Quadruples Multiverse Compiler output",
+    "icon": "🎯",
+    "affects": "multiverse_compiler",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "universal_constants" }
+  },
+  { 
+    "id": "meta_reality",
+    "name": "Meta-Reality Engine", 
+    "cost": 12500000000000000000,
+    "description": "Doubles Multiverse Compiler output",
+    "icon": "🌌",
+    "affects": "multiverse_compiler",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "omniversal_compiler" }
+  },
+  { 
+    "id": "existence_compiler",
+    "name": "Existence Compiler", 
+    "cost": 62500000000000000000,
+    "description": "Quintuples Multiverse Compiler output",
+    "icon": "✨",
+    "affects": "multiverse_compiler",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "meta_reality" }
   }
 ]

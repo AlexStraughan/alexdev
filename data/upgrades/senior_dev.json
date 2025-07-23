@@ -18,5 +18,85 @@
     "affects": "senior_dev",
     "multiplier": 3,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "agile_methodology" }
+  },
+  { 
+    "id": "scrum_master",
+    "name": "Scrum Master Certification", 
+    "cost": 75000,
+    "description": "Doubles Senior Developer output",
+    "icon": "📋",
+    "affects": "senior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "code_review_skills" }
+  },
+  { 
+    "id": "devops_pipeline",
+    "name": "DevOps Pipeline", 
+    "cost": 375000,
+    "description": "Doubles Senior Developer output",
+    "icon": "🔧",
+    "affects": "senior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "scrum_master" }
+  },
+  { 
+    "id": "microservices_architecture",
+    "name": "Microservices Architecture", 
+    "cost": 1875000,
+    "description": "Triples Senior Developer output",
+    "icon": "🏗️",
+    "affects": "senior_dev",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "devops_pipeline" }
+  },
+  { 
+    "id": "cloud_certification",
+    "name": "Cloud Certification", 
+    "cost": 9375000,
+    "description": "Doubles Senior Developer output",
+    "icon": "☁️",
+    "affects": "senior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "microservices_architecture" }
+  },
+  { 
+    "id": "tech_lead",
+    "name": "Tech Lead Position", 
+    "cost": 46875000,
+    "description": "Doubles Senior Developer output",
+    "icon": "👑",
+    "affects": "senior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "cloud_certification" }
+  },
+  { 
+    "id": "architecture_patterns",
+    "name": "Architecture Patterns", 
+    "cost": 234375000,
+    "description": "Quadruples Senior Developer output",
+    "icon": "🏛️",
+    "affects": "senior_dev",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "tech_lead" }
+  },
+  { 
+    "id": "system_design",
+    "name": "System Design Expertise", 
+    "cost": 1171875000,
+    "description": "Doubles Senior Developer output",
+    "icon": "📐",
+    "affects": "senior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "architecture_patterns" }
+  },
+  { 
+    "id": "principal_engineer",
+    "name": "Principal Engineer", 
+    "cost": 5859375000,
+    "description": "Quintuples Senior Developer output",
+    "icon": "⭐",
+    "affects": "senior_dev",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "system_design" }
   }
 ]

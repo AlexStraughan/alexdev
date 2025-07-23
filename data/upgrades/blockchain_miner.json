@@ -18,5 +18,85 @@
     "affects": "blockchain_miner",
     "multiplier": 3,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "asic_miners" }
+  },
+  { 
+    "id": "mining_pools",
+    "name": "Mining Pools", 
+    "cost": 240000000000,
+    "description": "Doubles Blockchain Miner output",
+    "icon": "🏊",
+    "affects": "blockchain_miner",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "proof_of_stake" }
+  },
+  { 
+    "id": "smart_contracts",
+    "name": "Smart Contracts", 
+    "cost": 1200000000000,
+    "description": "Doubles Blockchain Miner output",
+    "icon": "📜",
+    "affects": "blockchain_miner",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "mining_pools" }
+  },
+  { 
+    "id": "layer_2_scaling",
+    "name": "Layer 2 Scaling", 
+    "cost": 6000000000000,
+    "description": "Triples Blockchain Miner output",
+    "icon": "🏗️",
+    "affects": "blockchain_miner",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "smart_contracts" }
+  },
+  { 
+    "id": "defi_protocols",
+    "name": "DeFi Protocols", 
+    "cost": 30000000000000,
+    "description": "Doubles Blockchain Miner output",
+    "icon": "💰",
+    "affects": "blockchain_miner",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "layer_2_scaling" }
+  },
+  { 
+    "id": "nft_marketplace",
+    "name": "NFT Marketplace", 
+    "cost": 150000000000000,
+    "description": "Doubles Blockchain Miner output",
+    "icon": "🎨",
+    "affects": "blockchain_miner",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "defi_protocols" }
+  },
+  { 
+    "id": "quantum_resistance",
+    "name": "Quantum Resistance", 
+    "cost": 750000000000000,
+    "description": "Quadruples Blockchain Miner output",
+    "icon": "🛡️",
+    "affects": "blockchain_miner",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "nft_marketplace" }
+  },
+  { 
+    "id": "interoperability",
+    "name": "Blockchain Interoperability", 
+    "cost": 3750000000000000,
+    "description": "Doubles Blockchain Miner output",
+    "icon": "🌐",
+    "affects": "blockchain_miner",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_resistance" }
+  },
+  { 
+    "id": "metaverse_integration",
+    "name": "Metaverse Integration", 
+    "cost": 18750000000000000,
+    "description": "Quintuples Blockchain Miner output",
+    "icon": "🌌",
+    "affects": "blockchain_miner",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "interoperability" }
   }
 ]

@@ -18,5 +18,85 @@
     "affects": "quantum_computer",
     "multiplier": 3,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_entanglement" }
+  },
+  { 
+    "id": "quantum_tunneling",
+    "name": "Quantum Tunneling", 
+    "cost": 90000000,
+    "description": "Doubles Quantum Computer output",
+    "icon": "🌀",
+    "affects": "quantum_computer",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "superposition_coding" }
+  },
+  { 
+    "id": "quantum_decoherence",
+    "name": "Decoherence Prevention", 
+    "cost": 450000000,
+    "description": "Doubles Quantum Computer output",
+    "icon": "🛡️",
+    "affects": "quantum_computer",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_tunneling" }
+  },
+  { 
+    "id": "quantum_error_correction",
+    "name": "Quantum Error Correction", 
+    "cost": 2250000000,
+    "description": "Triples Quantum Computer output",
+    "icon": "🔧",
+    "affects": "quantum_computer",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_decoherence" }
+  },
+  { 
+    "id": "quantum_supremacy",
+    "name": "Quantum Supremacy", 
+    "cost": 11250000000,
+    "description": "Doubles Quantum Computer output",
+    "icon": "👑",
+    "affects": "quantum_computer",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_error_correction" }
+  },
+  { 
+    "id": "quantum_cryptography",
+    "name": "Quantum Cryptography", 
+    "cost": 56250000000,
+    "description": "Doubles Quantum Computer output",
+    "icon": "🔐",
+    "affects": "quantum_computer",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_supremacy" }
+  },
+  { 
+    "id": "quantum_algorithms",
+    "name": "Quantum Algorithms", 
+    "cost": 281250000000,
+    "description": "Quadruples Quantum Computer output",
+    "icon": "📐",
+    "affects": "quantum_computer",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_cryptography" }
+  },
+  { 
+    "id": "quantum_parallelism",
+    "name": "Quantum Parallelism", 
+    "cost": 1406250000000,
+    "description": "Doubles Quantum Computer output",
+    "icon": "⚡",
+    "affects": "quantum_computer",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_algorithms" }
+  },
+  { 
+    "id": "quantum_consciousness",
+    "name": "Quantum Consciousness", 
+    "cost": 7031250000000,
+    "description": "Quintuples Quantum Computer output",
+    "icon": "🧠",
+    "affects": "quantum_computer",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_parallelism" }
   }
 ]

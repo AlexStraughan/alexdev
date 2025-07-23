@@ -18,5 +18,85 @@
     "affects": "junior_dev",
     "multiplier": 3,
     "unlockCondition": { "type": "upgrade_owned", "upgrade": "coffee_addiction" }
+  },
+  { 
+    "id": "mechanical_keyboard",
+    "name": "Mechanical Keyboard", 
+    "cost": 7500,
+    "description": "Doubles Junior Developer output",
+    "icon": "⌨️",
+    "affects": "junior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "stack_overflow_premium" }
+  },
+  { 
+    "id": "dual_monitors",
+    "name": "Dual Monitors", 
+    "cost": 37500,
+    "description": "Doubles Junior Developer output",
+    "icon": "🖥️",
+    "affects": "junior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "mechanical_keyboard" }
+  },
+  { 
+    "id": "ergonomic_chair",
+    "name": "Ergonomic Chair", 
+    "cost": 187500,
+    "description": "Doubles Junior Developer output",
+    "icon": "🪑",
+    "affects": "junior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "dual_monitors" }
+  },
+  { 
+    "id": "red_bull_supply",
+    "name": "Red Bull Supply", 
+    "cost": 937500,
+    "description": "Triples Junior Developer output",
+    "icon": "🥤",
+    "affects": "junior_dev",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "ergonomic_chair" }
+  },
+  { 
+    "id": "coding_bootcamp",
+    "name": "Coding Bootcamp", 
+    "cost": 4687500,
+    "description": "Doubles Junior Developer output",
+    "icon": "🎓",
+    "affects": "junior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "red_bull_supply" }
+  },
+  { 
+    "id": "github_copilot",
+    "name": "GitHub Copilot", 
+    "cost": 23437500,
+    "description": "Quadruples Junior Developer output",
+    "icon": "🤝",
+    "affects": "junior_dev",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "coding_bootcamp" }
+  },
+  { 
+    "id": "standing_desk",
+    "name": "Standing Desk", 
+    "cost": 117187500,
+    "description": "Doubles Junior Developer output",
+    "icon": "🏢",
+    "affects": "junior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "github_copilot" }
+  },
+  { 
+    "id": "work_from_home",
+    "name": "Work From Home", 
+    "cost": 585937500,
+    "description": "Quintuples Junior Developer output",
+    "icon": "🏠",
+    "affects": "junior_dev",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "standing_desk" }
   }
 ]
