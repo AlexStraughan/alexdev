@@ -503,7 +503,7 @@ window.adminCommands = {
             message.player_name = options.name;
         }
         
-        if (!message.points && !message.player_name) {
+        if (!message.hasOwnProperty('points') && !message.hasOwnProperty('player_name')) {
             console.error('❌ Either points or name must be provided');
             console.log('💡 Usage: adminCommands.editPlayer("player_id", {points: 1000, name: "NewName"})');
             return;
