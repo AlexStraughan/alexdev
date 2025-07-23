@@ -1721,6 +1721,9 @@ class Game {
                 isCrit = false;
             }
             
+            // Round click damage to prevent floating point precision issues
+            clickDamage = Math.round(clickDamage);
+            
             // Add points for clicking
             this.state.points += clickDamage;
             this.state.totalClicks++;
