@@ -43,7 +43,8 @@ class GameWebSocketClient {
             'player_registered': [],
             'chat_message': [],
             'leaderboard_update': [],
-            'active_players_update': []
+            'active_players_update': [],
+            'admin_response': []
         };
         
         // Wait for DOM to be ready before connecting
@@ -233,6 +234,9 @@ class GameWebSocketClient {
                     } else {
                         console.error('%c' + message.message, 'color: red; font-weight: bold');
                     }
+                    
+                    // Trigger admin response callbacks
+                    this.triggerCallbacks('admin_response', message);
                     break;
                 case 'game_reset':
                     window.wsDebug.important('💥 Game reset received from server:', message.message);

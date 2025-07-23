@@ -285,13 +285,13 @@ class AdminUI {
     
     async testAdminPassword() {
         return new Promise((resolve) => {
-            // Set up a temporary message handler to catch the response
-            const originalHandler = window.wsClient.messageHandlers.admin_response;
-            
             let responseReceived = false;
-            window.wsClient.messageHandlers.admin_response = (message) => {
+            
+            // Create a temporary callback handler
+            const tempHandler = (message) => {
                 responseReceived = true;
-                window.wsClient.messageHandlers.admin_response = originalHandler;
+                // Remove this temporary handler
+                window.wsClient.off('admin_response', tempHandler);
                 
                 if (message.success) {
                     resolve(true);
@@ -300,13 +300,16 @@ class AdminUI {
                 }
             };
             
+            // Add the temporary handler
+            window.wsClient.on('admin_response', tempHandler);
+            
             // Send test command
             window.adminCommands.listPlayers();
             
             // Timeout after 5 seconds
             setTimeout(() => {
                 if (!responseReceived) {
-                    window.wsClient.messageHandlers.admin_response = originalHandler;
+                    window.wsClient.off('admin_response', tempHandler);
                     resolve(false);
                 }
             }, 5000);
@@ -338,13 +341,13 @@ class AdminUI {
     
     async getPlayersData() {
         return new Promise((resolve, reject) => {
-            // Set up a temporary message handler to catch the response
-            const originalHandler = window.wsClient.messageHandlers.admin_response;
-            
             let responseReceived = false;
-            window.wsClient.messageHandlers.admin_response = (message) => {
+            
+            // Create a temporary callback handler
+            const tempHandler = (message) => {
                 responseReceived = true;
-                window.wsClient.messageHandlers.admin_response = originalHandler;
+                // Remove this temporary handler
+                window.wsClient.off('admin_response', tempHandler);
                 
                 if (message.success && message.players) {
                     resolve(message.players);
@@ -353,13 +356,16 @@ class AdminUI {
                 }
             };
             
+            // Add the temporary handler
+            window.wsClient.on('admin_response', tempHandler);
+            
             // Send list players command
             window.adminCommands.listPlayers();
             
             // Timeout after 10 seconds
             setTimeout(() => {
                 if (!responseReceived) {
-                    window.wsClient.messageHandlers.admin_response = originalHandler;
+                    window.wsClient.off('admin_response', tempHandler);
                     reject(new Error('Request timeout'));
                 }
             }, 10000);
@@ -503,13 +509,13 @@ class AdminUI {
     
     async executeAdminCommand(commandFunction) {
         return new Promise((resolve, reject) => {
-            // Set up a temporary message handler to catch the response
-            const originalHandler = window.wsClient.messageHandlers.admin_response;
-            
             let responseReceived = false;
-            window.wsClient.messageHandlers.admin_response = (message) => {
+            
+            // Create a temporary callback handler
+            const tempHandler = (message) => {
                 responseReceived = true;
-                window.wsClient.messageHandlers.admin_response = originalHandler;
+                // Remove this temporary handler
+                window.wsClient.off('admin_response', tempHandler);
                 
                 if (message.success) {
                     resolve(message);
@@ -518,13 +524,16 @@ class AdminUI {
                 }
             };
             
+            // Add the temporary handler
+            window.wsClient.on('admin_response', tempHandler);
+            
             // Execute the command
             commandFunction();
             
             // Timeout after 10 seconds
             setTimeout(() => {
                 if (!responseReceived) {
-                    window.wsClient.messageHandlers.admin_response = originalHandler;
+                    window.wsClient.off('admin_response', tempHandler);
                     reject(new Error('Request timeout'));
                 }
             }, 10000);
