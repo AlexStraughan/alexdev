@@ -690,10 +690,21 @@ class GameWebSocketServer
         "#{index + 1}. #{row[1] || 'Unknown'} (#{row[0]}) - #{row[2]} points"
       end.join("\n")
       
+      # Format players data for UI consumption
+      players_data = players.map do |row|
+        {
+          player_id: row[0],
+          player_name: row[1],
+          total_points_earned: row[2],
+          total_clicks: row[3]
+        }
+      end
+      
       send_to_client(player_id, {
         type: 'admin_response',
         success: true,
-        message: "📋 Top Players:\n#{player_list}"
+        message: "📋 Top Players:\n#{player_list}",
+        players: players_data
       })
       
     rescue => e
