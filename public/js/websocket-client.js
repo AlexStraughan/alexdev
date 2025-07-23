@@ -1,4 +1,27 @@
 // WebSocket Game Client - Handles real-time communication with game server
+
+// Debug mode control
+window.wsDebug = {
+    enabled: false,
+    toggle: function() {
+        this.enabled = !this.enabled;
+        console.log(`🔧 WebSocket debug mode ${this.enabled ? 'ENABLED' : 'DISABLED'}`);
+        if (this.enabled) {
+            console.log('🔧 Debug commands: wsDebug.enabled = true/false, or use wsDebug.toggle()');
+        }
+        return this.enabled;
+    },
+    log: function(message, ...args) {
+        if (this.enabled) {
+            console.log(message, ...args);
+        }
+    },
+    // Always log important messages regardless of debug mode
+    important: function(message, ...args) {
+        console.log(message, ...args);
+    }
+};
+
 class GameWebSocketClient {
     constructor() {
         this.ws = null;
@@ -35,7 +58,7 @@ class GameWebSocketClient {
 
     connect() {
         try {
-            console.log('🔌 Attempting WebSocket connection...');
+            window.wsDebug.important('🔌 Connecting to WebSocket...');
             
             // Close any existing connection
             if (this.ws) {
@@ -48,11 +71,11 @@ class GameWebSocketClient {
             const hostname = window.location.hostname === 'localhost' ? '127.0.0.1' : window.location.hostname;
             const wsUrl = `${protocol}//${hostname}/ws/`;
             
-            console.log(`🔌 Connecting to WebSocket at: ${wsUrl}`);
+            window.wsDebug.log(`🔌 Connecting to WebSocket at: ${wsUrl}`);
             this.ws = new WebSocket(wsUrl);
             
             this.ws.onopen = (event) => {
-                console.log('🔌 WebSocket connected successfully');
+                window.wsDebug.important('🔌 WebSocket connected successfully');
                 this.isConnected = true;
                 this.reconnectAttempts = 0;
                 
@@ -66,7 +89,7 @@ class GameWebSocketClient {
                     
                     // Start heartbeat to keep connection alive and send activity data
                     this.startHeartbeat();
-                    console.log('💓 Heartbeat started');
+                    window.wsDebug.log('💓 Heartbeat started');
                     
                     // Dispatch websocketReady event for other systems
                     document.dispatchEvent(new CustomEvent('websocketReady', {
@@ -77,17 +100,17 @@ class GameWebSocketClient {
 
             this.ws.onmessage = (event) => {
                 try {
-                    // console.log('📨 Raw message received:', event.data);
+                    // window.wsDebug.log('📨 Raw message received:', event.data);
                     const message = JSON.parse(event.data);
-                    console.log('📨 Parsed message:', message.type, message);
+                    window.wsDebug.log('📨 Parsed message:', message.type, message);
                     
                     // Add detailed logging for leaderboard and active players
                     if (message.type === 'leaderboard_update') {
-                        console.log('🏆 Leaderboard data received:', message.leaderboard);
-                        console.log('🏆 First entry:', message.leaderboard[0]);
+                        window.wsDebug.log('🏆 Leaderboard data received:', message.leaderboard);
+                        window.wsDebug.log('🏆 First entry:', message.leaderboard[0]);
                     }
                     if (message.type === 'active_players_update') {
-                        console.log('👥 Active players data received:', message.players);
+                        window.wsDebug.log('👥 Active players data received:', message.players);
                     }
                     
                     this.handleMessage(message);
@@ -99,7 +122,7 @@ class GameWebSocketClient {
             };
 
             this.ws.onclose = (event) => {
-                console.log('🔌 WebSocket disconnected, code:', event.code, 'reason:', event.reason);
+                window.wsDebug.important('🔌 WebSocket disconnected, code:', event.code, 'reason:', event.reason);
                 this.isConnected = false;
                 this.stopHeartbeat();
                 this.attemptReconnect();
@@ -119,7 +142,7 @@ class GameWebSocketClient {
     attemptReconnect() {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
-            console.log(`🔄 Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+            window.wsDebug.important(`🔄 Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
             
             setTimeout(() => {
                 this.connect();
@@ -130,29 +153,31 @@ class GameWebSocketClient {
     }
 
     handleMessage(message) {
-        // Reduced logging to prevent console spam - only log message type for important events
-        const shouldLog = ['connected', 'admin_response', 'game_reset'].includes(message.type);
+        // Only log important message types by default, enable debug for all
+        const shouldLog = ['connected', 'admin_response', 'game_reset', 'player_registered'].includes(message.type);
         if (shouldLog) {
-            console.log('📨 Processing message:', message.type);
+            window.wsDebug.important('📨 Processing message:', message.type);
+        } else {
+            window.wsDebug.log('📨 Processing message:', message.type);
         }
         
         try {
             switch (message.type) {
                 case 'connected':
-                    console.log('🔌 Server confirmed connection, assigned player ID:', message.player_id);
+                    window.wsDebug.important('🔌 Server confirmed connection, assigned player ID:', message.player_id);
                     this.playerId = message.player_id;
                     this.triggerCallbacks('connected', message);
                     break;
                 case 'game_state_loaded':
-                    console.log('🎮 Game state loaded');
+                    window.wsDebug.log('🎮 Game state loaded');
                     this.triggerCallbacks('game_state_loaded', message);
                     break;
                 case 'game_state_saved':
-                    console.log('💾 Game state saved');
+                    window.wsDebug.log('💾 Game state saved');
                     this.triggerCallbacks('game_state_saved', message);
                     break;
                 case 'player_registered':
-                    console.log('👤 Player registered:', message.player_name);
+                    window.wsDebug.important('👤 Player registered:', message.player_name);
                     this.isRegistered = true;
                     this.playerName = message.player_name;
                     this.triggerCallbacks('player_registered', message);
@@ -162,21 +187,21 @@ class GameWebSocketClient {
                     this.triggerCallbacks('chat_message', message);
                     break;
                 case 'leaderboard_update':
-                    // console.log('🏆 Leaderboard update received'); // Reduced logging for less spam
+                    window.wsDebug.log('🏆 Leaderboard update received');
                     this.triggerCallbacks('leaderboard_update', message);
                     break;
                 case 'active_players_update':
-                    // console.log('👥 Active players update received:', message.players?.length || 0, 'players'); // Reduced logging for less spam
+                    window.wsDebug.log('👥 Active players update received:', message.players?.length || 0, 'players');
                     this.triggerCallbacks('active_players_update', message);
                     break;
                 case 'admin_response':
-                    console.log('🔧 Admin response:', message.success ? '✅' : '❌', message.message);
+                    window.wsDebug.important('🔧 Admin response:', message.success ? '✅' : '❌', message.message);
                     if (message.success) {
                         console.log('%c' + message.message, 'color: green; font-weight: bold');
                         
                         // Check if this admin command affected the current player's score
                         if (message.updated_player_id && window.game && window.game.playerId === message.updated_player_id) {
-                            console.log('🎮 Admin command affected current player - syncing game state...');
+                            window.wsDebug.important('🎮 Admin command affected current player - syncing game state...');
                             
                             // Update the game state if points were changed
                             if (message.new_points !== undefined) {
@@ -202,7 +227,7 @@ class GameWebSocketClient {
                                     }
                                 }
                                 
-                                console.log(`🎉 Game state synced! You now have ${message.new_points.toLocaleString()} points!`);
+                                window.wsDebug.important(`🎉 Game state synced! You now have ${message.new_points.toLocaleString()} points!`);
                             }
                         }
                     } else {
@@ -210,7 +235,7 @@ class GameWebSocketClient {
                     }
                     break;
                 case 'game_reset':
-                    console.log('💥 Game reset received from server:', message.message);
+                    window.wsDebug.important('💥 Game reset received from server:', message.message);
                     console.log('%c🎮 GAME RESET: All progress has been cleared by admin', 'color: red; font-weight: bold; font-size: 14px;');
                     
                     // Clear localStorage
@@ -236,9 +261,9 @@ class GameWebSocketClient {
                     }, 2000);
                     break;
                 default:
-                    console.log('❓ Unknown message type:', message.type);
+                    window.wsDebug.log('❓ Unknown message type:', message.type);
             }
-            console.log('✅ Message processed successfully:', message.type);
+            window.wsDebug.log('✅ Message processed successfully:', message.type);
         } catch (error) {
             console.error('❌ Error handling message:', error);
             console.error('❌ Message that caused error:', message);
@@ -250,20 +275,20 @@ class GameWebSocketClient {
     send(message) {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(message));
-            console.log('📤 Sent:', message.type);
+            window.wsDebug.log('📤 Sent:', message.type);
         } else {
-            console.log('⚠️ WebSocket not ready, queueing message:', message.type, 'readyState:', this.ws ? this.ws.readyState : 'no ws');
+            window.wsDebug.log('⚠️ WebSocket not ready, queueing message:', message.type, 'readyState:', this.ws ? this.ws.readyState : 'no ws');
             this.messageQueue.push(message);
         }
     }
 
     processMessageQueue() {
-        console.log('📬 Processing', this.messageQueue.length, 'queued messages');
+        window.wsDebug.log('📬 Processing', this.messageQueue.length, 'queued messages');
         while (this.messageQueue.length > 0) {
             const message = this.messageQueue.shift();
             if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
                 this.ws.send(JSON.stringify(message));
-                console.log('📤 Sent queued:', message.type);
+                window.wsDebug.log('📤 Sent queued:', message.type);
             } else {
                 // Put it back and stop processing
                 this.messageQueue.unshift(message);
@@ -327,7 +352,7 @@ class GameWebSocketClient {
                     points_per_second: window.game.state.pointsPerSecond || 0,
                     generators_owned: Object.values(window.game.state.generators || {}).reduce((sum, count) => sum + count, 0)
                 };
-                // Removed heartbeat console logs to reduce spam
+                // Reduced heartbeat console logs to reduce spam - now using debug mode
             }
             this.sendHeartbeat(activityData);
         }, 10000); // Every 10 seconds for easier debugging
@@ -358,7 +383,7 @@ class GameWebSocketClient {
 
     triggerCallbacks(event, data) {
         if (this.callbacks[event]) {
-            console.log(`🔔 Triggering ${this.callbacks[event].length} callbacks for event: ${event}`);
+            window.wsDebug.log(`🔔 Triggering ${this.callbacks[event].length} callbacks for event: ${event}`);
             this.callbacks[event].forEach((callback, index) => {
                 try {
                     callback(data);
@@ -618,7 +643,12 @@ console.log(`
 - adminCommands.giveMyself(points) - Edit your own score
 - adminCommands.clearPassword() - Clear cached admin password
 
-🔐 Password System:
+� DEBUG MODE:
+- wsDebug.toggle() - Toggle detailed WebSocket logging
+- wsDebug.enabled = true/false - Enable/disable debug mode
+Current debug mode: ${window.wsDebug.enabled ? 'ENABLED' : 'DISABLED'}
+
+�🔐 Password System:
 - Admin commands will prompt for password on first use
 - Password is cached for 5 minutes for convenience
 - Use clearPassword() to force re-authentication
