@@ -899,7 +899,7 @@ class Game {
     // Initialize the game
     async initialize() {
         await this.loadGameState();
-        await this.loadGenerators();
+        await this.loadGameData(); // Load both generators and upgrades from API
         
         // Load greetings cache in background (non-blocking)
         setTimeout(() => this.loadGreetings(), 500);
@@ -952,12 +952,21 @@ class Game {
         this.startGameLoop();
     }
 
-    // Load generators from API
-    async loadGenerators() {
+    // Load generators and upgrades from API
+    async loadGameData() {
         try {
-            const response = await fetch('/api/generators');
-            const data = await response.json();
-            this.generatorData = data.generators;
+            // Load generators
+            const generatorsResponse = await fetch('/api/generators');
+            const generatorsData = await generatorsResponse.json();
+            this.generatorData = generatorsData.generators;
+            
+            // Load upgrades from API instead of using hardcoded data
+            const upgradesResponse = await fetch('/api/upgrades');
+            const upgradesData = await upgradesResponse.json();
+            this.upgradeData = upgradesData.upgrades;
+            
+            console.log('📦 Loaded generators from API:', this.generatorData.length);
+            console.log('⬆️ Loaded upgrades from API:', this.upgradeData.length);
             
             // Initialize generator counts if not loaded from save
             this.generatorData.forEach(gen => {
@@ -979,7 +988,7 @@ class Game {
             // Initialize with generators tab active
             window.switchTab('generators');
         } catch (error) {
-            console.error('Error loading generators:', error);
+            console.error('Error loading generators and upgrades:', error);
         }
     }
 
