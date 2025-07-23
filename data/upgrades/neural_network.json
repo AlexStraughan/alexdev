@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "deep_learning",
+    "name": "Deep Learning", 
+    "cost": 180000000,
+    "description": "Doubles Neural Network output",
+    "icon": "🔍",
+    "affects": "neural_network",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "neural_network", "count": 1 }
+  },
+  { 
+    "id": "backpropagation_boost",
+    "name": "Backpropagation Boost", 
+    "cost": 3500000000,
+    "description": "Triples Neural Network output",
+    "icon": "↩️",
+    "affects": "neural_network",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "deep_learning" }
+  }
+]

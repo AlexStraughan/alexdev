@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "consciousness_link",
+    "name": "Consciousness Link", 
+    "cost": 32000000000,
+    "description": "Doubles Digital Hivemind output",
+    "icon": "🔗",
+    "affects": "digital_hivemind",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "digital_hivemind", "count": 1 }
+  },
+  { 
+    "id": "collective_intelligence",
+    "name": "Collective Intelligence", 
+    "cost": 620000000000,
+    "description": "Quadruples Digital Hivemind output",
+    "icon": "🧠",
+    "affects": "digital_hivemind",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "consciousness_link" }
+  }
+]

@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "neural_optimization",
+    "name": "Neural Optimization", 
+    "cost": 80000,
+    "description": "Doubles AI Assistant output",
+    "icon": "⚡",
+    "affects": "ai_assistant",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "ai_assistant", "count": 1 }
+  },
+  { 
+    "id": "consciousness_upgrade",
+    "name": "Consciousness Upgrade", 
+    "cost": 1200000,
+    "description": "Triples AI Assistant output",
+    "icon": "🧩",
+    "affects": "ai_assistant",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "neural_optimization" }
+  }
+]

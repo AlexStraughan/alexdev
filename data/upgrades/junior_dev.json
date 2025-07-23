@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "coffee_addiction",
+    "name": "Coffee Addiction", 
+    "cost": 100,
+    "description": "Doubles Junior Developer output",
+    "icon": "☕",
+    "affects": "junior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "junior_dev", "count": 5 }
+  },
+  { 
+    "id": "stack_overflow_premium",
+    "name": "Stack Overflow Premium", 
+    "cost": 2500,
+    "description": "Triples Junior Developer output",
+    "icon": "📚",
+    "affects": "junior_dev",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "coffee_addiction" }
+  }
+]

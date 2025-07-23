@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "dimensional_bridge",
+    "name": "Dimensional Bridge", 
+    "cost": 8400000000000,
+    "description": "Doubles Multiverse Compiler output",
+    "icon": "🌉",
+    "affects": "multiverse_compiler",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "multiverse_compiler", "count": 1 }
+  },
+  { 
+    "id": "reality_merger",
+    "name": "Reality Merger", 
+    "cost": 160000000000000,
+    "description": "Quintuples Multiverse Compiler output",
+    "icon": "🌀",
+    "affects": "multiverse_compiler",
+    "multiplier": 5,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "dimensional_bridge" }
+  }
+]

@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "universal_constants",
+    "name": "Universal Constants", 
+    "cost": 2900000000000000,
+    "description": "Doubles Code Singularity output",
+    "icon": "🌟",
+    "affects": "code_singularity",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "code_singularity", "count": 1 }
+  },
+  { 
+    "id": "reality_rewrite",
+    "name": "Reality Rewrite", 
+    "cost": 56000000000000000,
+    "description": "Code Singularity produces 10x more",
+    "icon": "🔄",
+    "affects": "code_singularity",
+    "multiplier": 10,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "universal_constants" }
+  }
+]

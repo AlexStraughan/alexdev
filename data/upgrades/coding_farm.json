@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "hydroponic_setup",
+    "name": "Hydroponic Setup", 
+    "cost": 12000000,
+    "description": "Doubles Coding Farm output",
+    "icon": "💧",
+    "affects": "coding_farm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "coding_farm", "count": 1 }
+  },
+  { 
+    "id": "automation_drones",
+    "name": "Automation Drones", 
+    "cost": 240000000,
+    "description": "Quadruples Coding Farm output",
+    "icon": "🚁",
+    "affects": "coding_farm",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "hydroponic_setup" }
+  }
+]

@@ -1,0 +1,32 @@
+[
+  { 
+    "id": "global_efficiency",
+    "name": "Global Efficiency", 
+    "cost": 50000,
+    "description": "All generators produce 50% more",
+    "icon": "🌍",
+    "affects": "all",
+    "multiplier": 1.5,
+    "unlockCondition": { "type": "total_generators", "count": 10 }
+  },
+  { 
+    "id": "quantum_acceleration",
+    "name": "Quantum Acceleration", 
+    "cost": 2000000,
+    "description": "All generators produce 100% more",
+    "icon": "🚀",
+    "affects": "all",
+    "multiplier": 2,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "global_efficiency" }
+  },
+  { 
+    "id": "cosmic_synergy",
+    "name": "Cosmic Synergy", 
+    "cost": 100000000000,
+    "description": "All generators produce 200% more",
+    "icon": "💫",
+    "affects": "all",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_acceleration" }
+  }
+]

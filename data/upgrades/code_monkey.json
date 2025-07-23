@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "banana_incentive",
+    "name": "Banana Incentive", 
+    "cost": 8000,
+    "description": "Doubles Code Monkey output",
+    "icon": "🍌",
+    "affects": "code_monkey",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "code_monkey", "count": 2 }
+  },
+  { 
+    "id": "jungle_gym_office",
+    "name": "Jungle Gym Office", 
+    "cost": 120000,
+    "description": "Quadruples Code Monkey output",
+    "icon": "🌴",
+    "affects": "code_monkey",
+    "multiplier": 4,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "banana_incentive" }
+  }
+]

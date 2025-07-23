@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "temporal_stabilizer",
+    "name": "Temporal Stabilizer", 
+    "cost": 520000000000,
+    "description": "Doubles Time Machine output",
+    "icon": "⚖️",
+    "affects": "time_machine",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "time_machine", "count": 1 }
+  },
+  { 
+    "id": "paradox_resolver",
+    "name": "Paradox Resolver", 
+    "cost": 9800000000000,
+    "description": "Triples Time Machine output",
+    "icon": "🔀",
+    "affects": "time_machine",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "temporal_stabilizer" }
+  }
+]

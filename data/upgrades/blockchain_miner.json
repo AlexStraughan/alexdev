@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "asic_miners",
+    "name": "ASIC Miners", 
+    "cost": 2500000000,
+    "description": "Doubles Blockchain Miner output",
+    "icon": "🔧",
+    "affects": "blockchain_miner",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "blockchain_miner", "count": 1 }
+  },
+  { 
+    "id": "proof_of_stake",
+    "name": "Proof of Stake", 
+    "cost": 48000000000,
+    "description": "Triples Blockchain Miner output",
+    "icon": "🎯",
+    "affects": "blockchain_miner",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "asic_miners" }
+  }
+]

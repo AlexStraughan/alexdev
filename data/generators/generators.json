@@ -1,0 +1,119 @@
+[
+  { 
+    "id": "junior_dev",
+    "name": "Junior Developer", 
+    "baseCost": 15,
+    "baseProduction": 1,
+    "description": "Me, sometimes I write code, poorly",
+    "icon": "👨‍💻",
+    "unlockCondition": { "type": "always" }
+  },
+  { 
+    "id": "senior_dev",
+    "name": "Senior Developer", 
+    "baseCost": 100,
+    "baseProduction": 3,
+    "description": "Honestly me on a good day",
+    "icon": "🧙‍♂️",
+    "unlockCondition": { "type": "always" }
+  },
+  { 
+    "id": "code_monkey",
+    "name": "Code Monkey", 
+    "baseCost": 1100,
+    "baseProduction": 8,
+    "description": "Outsourcing code to the jungle/ Fiver",
+    "icon": "🐵",
+    "unlockCondition": { "type": "always" }
+  },
+  { 
+    "id": "ai_assistant",
+    "name": "AI Assistant", 
+    "baseCost": 12000,
+    "baseProduction": 47,
+    "description": "Average Linkedin user",
+    "icon": "🤖",
+    "unlockCondition": { "type": "always" }
+  },
+  { 
+    "id": "quantum_computer",
+    "name": "Quantum Computer", 
+    "baseCost": 130000,
+    "baseProduction": 260,
+    "description": "Encryption is now useless prepare for collapse",
+    "icon": "⚛️",
+    "unlockCondition": { "type": "generator_owned", "generator": "ai_assistant", "count": 1 }
+  },
+  { 
+    "id": "coding_farm",
+    "name": "Coding Farm", 
+    "baseCost": 1400000,
+    "baseProduction": 1400,
+    "description": "Like the ones that make food, but worse?",
+    "icon": "🏭",
+    "unlockCondition": { "type": "generator_owned", "generator": "quantum_computer", "count": 1 }
+  },
+  { 
+    "id": "neural_network",
+    "name": "Neural Network", 
+    "baseCost": 20000000,
+    "baseProduction": 7800,
+    "description": "The human brain, but worse",
+    "icon": "🧠",
+    "unlockCondition": { "type": "generator_owned", "generator": "coding_farm", "count": 1 }
+  },
+  { 
+    "id": "blockchain_miner",
+    "name": "Blockchain Miner", 
+    "baseCost": 280000000,
+    "baseProduction": 28000,
+    "description": "Mining cryptocurrency to fund more code",
+    "icon": "⛏️",
+    "unlockCondition": { "type": "generator_owned", "generator": "neural_network", "count": 1 }
+  },
+  { 
+    "id": "digital_hivemind",
+    "name": "Digital Hivemind", 
+    "baseCost": 3600000000,
+    "baseProduction": 125000,
+    "description": "Collective consciousness of all programmers",
+    "icon": "🧬",
+    "unlockCondition": { "type": "generator_owned", "generator": "blockchain_miner", "count": 1 }
+  },
+  { 
+    "id": "time_machine",
+    "name": "Time Machine", 
+    "baseCost": 58000000000,
+    "baseProduction": 580000,
+    "description": "Steal code from the future, obviously",
+    "icon": "⏰",
+    "unlockCondition": { "type": "generator_owned", "generator": "digital_hivemind", "count": 1 }
+  },
+  { 
+    "id": "multiverse_compiler",
+    "name": "Multiverse Compiler", 
+    "baseCost": 940000000000,
+    "baseProduction": 2700000,
+    "description": "Compiles code across infinite realities",
+    "icon": "🌌",
+    "unlockCondition": { "type": "generator_owned", "generator": "time_machine", "count": 1 }
+  },
+  { 
+    "id": "god_algorithm",
+    "name": "God Algorithm", 
+    "baseCost": 15000000000000,
+    "baseProduction": 12500000,
+    "description": "The algorithm that created everything",
+    "icon": "👁️",
+    "unlockCondition": { "type": "generator_owned", "generator": "multiverse_compiler", "count": 1 }
+  },
+  { 
+    "id": "code_singularity",
+    "name": "Code Singularity", 
+    "baseCost": 330000000000000,
+    "baseProduction": 58000000,
+    "description": "Me on an average wednesday tbh",
+    "icon": "🌌",
+    "unlockCondition": { "type": "generator_owned", "generator": "god_algorithm", "count": 1 }
+  }
+]

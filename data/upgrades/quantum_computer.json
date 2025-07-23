@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "quantum_entanglement",
+    "name": "Quantum Entanglement", 
+    "cost": 900000,
+    "description": "Doubles Quantum Computer output",
+    "icon": "🔗",
+    "affects": "quantum_computer",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "quantum_computer", "count": 1 }
+  },
+  { 
+    "id": "superposition_coding",
+    "name": "Superposition Coding", 
+    "cost": 18000000,
+    "description": "Triples Quantum Computer output",
+    "icon": "⚛️",
+    "affects": "quantum_computer",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "quantum_entanglement" }
+  }
+]

@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "divine_optimization",
+    "name": "Divine Optimization", 
+    "cost": 135000000000000,
+    "description": "Doubles God Algorithm output",
+    "icon": "✨",
+    "affects": "god_algorithm",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "god_algorithm", "count": 1 }
+  },
+  { 
+    "id": "omniscient_debugging",
+    "name": "Omniscient Debugging", 
+    "cost": 2600000000000000,
+    "description": "Triples God Algorithm output",
+    "icon": "👁️‍🗨️",
+    "affects": "god_algorithm",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "divine_optimization" }
+  }
+]

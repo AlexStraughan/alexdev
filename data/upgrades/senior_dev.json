@@ -1,0 +1,22 @@
+[
+  { 
+    "id": "agile_methodology",
+    "name": "Agile Methodology", 
+    "cost": 800,
+    "description": "Doubles Senior Developer output",
+    "icon": "🔄",
+    "affects": "senior_dev",
+    "multiplier": 2,
+    "unlockCondition": { "type": "generator_owned", "generator": "senior_dev", "count": 3 }
+  },
+  { 
+    "id": "code_review_skills",
+    "name": "Code Review Skills", 
+    "cost": 15000,
+    "description": "Triples Senior Developer output",
+    "icon": "👀",
+    "affects": "senior_dev",
+    "multiplier": 3,
+    "unlockCondition": { "type": "upgrade_owned", "upgrade": "agile_methodology" }
+  }
+]
