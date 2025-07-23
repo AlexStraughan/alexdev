@@ -578,7 +578,10 @@ class Game {
                 isInfinite: true,
                 unlockCondition: { type: "upgrade_owned", upgrade: "crit_multiplier_3" }
             }
-        ];
+        ]; // End of hardcoded upgradeData - this should be empty and loaded from API
+
+        // Reset upgradeData to empty array - will be populated by loadGameData()
+        this.upgradeData = [];
 
         this.achievements = [
             { id: "first_click", name: "First Steps", description: "Make your first click", requirement: 1, type: "clicks" },
