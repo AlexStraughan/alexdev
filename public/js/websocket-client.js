@@ -200,35 +200,55 @@ class GameWebSocketClient {
                     if (message.success) {
                         console.log('%c' + message.message, 'color: green; font-weight: bold');
                         
-                        // Check if this admin command affected the current player's score
+                        // Check if this admin command affected the current player
                         if (message.updated_player_id && window.game && window.game.playerId === message.updated_player_id) {
-                            window.wsDebug.important('🎮 Admin command affected current player - syncing game state...');
+                            window.wsDebug.important('🎮 Admin command affected current player - reloading game state from server...');
                             
-                            // Update the game state if points were changed
-                            if (message.new_points !== undefined) {
-                                window.game.state.points = message.new_points;
-                                window.game.state.totalPointsEarned = message.new_points;
-                                
-                                // Update the display using the correct method
-                                if (typeof window.game.updateDisplay === 'function') {
-                                    window.game.updateDisplay();
+                            // Instead of manually syncing individual fields, reload the entire game state from server
+                            // This ensures the client has the authoritative server data and prevents local overwrites
+                            if (typeof window.game.loadGameState === 'function') {
+                                window.game.loadGameState().then(() => {
+                                    window.wsDebug.important('🎉 Game state reloaded successfully after admin changes!');
                                     
-                                    // Also trigger re-render of generators and upgrades in case new items unlocked
+                                    // Update the display
+                                    if (typeof window.game.updateDisplay === 'function') {
+                                        window.game.updateDisplay();
+                                    }
+                                    
+                                    // Re-render generators and upgrades in case new items unlocked
                                     if (typeof window.game.renderGenerators === 'function') {
                                         window.game.renderGenerators();
                                     }
                                     if (typeof window.game.renderUpgrades === 'function') {
                                         window.game.renderUpgrades();
                                     }
-                                } else {
-                                    // Fallback: manually update point display
-                                    const pointsElement = document.getElementById('points');
-                                    if (pointsElement) {
-                                        pointsElement.textContent = message.new_points.toLocaleString();
+                                }).catch(error => {
+                                    console.error('❌ Failed to reload game state after admin changes:', error);
+                                    
+                                    // Fallback: manually update points if available
+                                    if (message.new_points !== undefined) {
+                                        window.game.state.points = message.new_points;
+                                        window.game.state.totalPointsEarned = message.new_points;
+                                        window.wsDebug.important(`🎉 Fallback: Updated points to ${message.new_points.toLocaleString()}`);
+                                        
+                                        if (typeof window.game.updateDisplay === 'function') {
+                                            window.game.updateDisplay();
+                                        }
+                                    }
+                                });
+                            } else {
+                                window.wsDebug.important('⚠️ Game loadGameState method not available, using fallback');
+                                
+                                // Fallback: manually update points if available
+                                if (message.new_points !== undefined) {
+                                    window.game.state.points = message.new_points;
+                                    window.game.state.totalPointsEarned = message.new_points;
+                                    window.wsDebug.important(`🎉 Fallback: Updated points to ${message.new_points.toLocaleString()}`);
+                                    
+                                    if (typeof window.game.updateDisplay === 'function') {
+                                        window.game.updateDisplay();
                                     }
                                 }
-                                
-                                window.wsDebug.important(`🎉 Game state synced! You now have ${message.new_points.toLocaleString()} points!`);
                             }
                         }
                     } else {

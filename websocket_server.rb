@@ -538,6 +538,11 @@ class GameWebSocketServer
         response[:new_points] = new_points
       end
       
+      # Include new name in response if name was updated
+      if new_name && !new_name.strip.empty?
+        response[:new_player_name] = new_name
+      end
+      
       send_to_client(player_id, response)
       
       # Leaderboard will update on next periodic broadcast (every 10 seconds)
