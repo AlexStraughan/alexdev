@@ -387,7 +387,12 @@ class GameEncryption
   end
   
   private
-  
+
+  def self.encryption_key
+    # Use first 32 bytes of SECRET_KEY for AES-256
+    Digest::SHA256.digest(SECRET_KEY)[0..31]
+  end
+
   # Calculate generator income with upgrades and multipliers
   def self.calculate_generator_income(generators, state)
     base_income = 0
