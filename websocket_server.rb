@@ -1270,7 +1270,7 @@ class WebSocketConnection < EventMachine::Connection
         puts "🔑 WebSocket key: #{websocket_key}"
         
         # Generate accept key
-        accept_key = Base64.encode64(Digest::SHA1.digest(websocket_key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')).strip
+        accept_key = Base64.strict_encode64(Digest::SHA1.digest(websocket_key + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'))
         
         # Send handshake response
         response = [
