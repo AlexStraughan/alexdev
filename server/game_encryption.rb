@@ -110,43 +110,46 @@ class GameEncryption
   end
 
   def self.encrypt_game_data(data)
-    cipher = OpenSSL::Cipher.new(CIPHER_TYPE)
-    cipher.encrypt
-    cipher.key = Digest::SHA256.digest(SECRET_KEY)
-    
-    # Generate random IV for each encryption
-    iv = cipher.random_iv
-    
-    # Encrypt the data
-    json_data = JSON.generate(data)
-    encrypted = cipher.update(json_data) + cipher.final
-    
-    # Get authentication tag for GCM mode
-    auth_tag = cipher.auth_tag
-    
-    # Combine IV, auth_tag, and encrypted data, then base64 encode
-    combined = iv + auth_tag + encrypted
-    Base64.strict_encode64(combined)
+    return nil unless data
+
+    begin
+      # Generate a 12-byte IV for AES-GCM (not 16-byte)
+      iv = SecureRandom.random_bytes(12)  # Changed from 16 to 12
+      
+      cipher = OpenSSL::Cipher.new('aes-256-gcm')
+      cipher.encrypt
+      cipher.key = encryption_key
+      cipher.iv = iv
+      
+      encrypted = cipher.update(JSON.generate(data)) + cipher.final
+      auth_tag = cipher.auth_tag
+      
+      # Combine IV + auth_tag + encrypted_data
+      combined = iv + auth_tag + encrypted
+      Base64.strict_encode64(combined)
+    rescue => e
+      puts "🚫 Encryption failed: #{e.message}"
+      nil
+    end
   end
   
   def self.decrypt_game_data(encrypted_data)
+    return nil unless encrypted_data
+
     begin
-      # Decode from base64
       combined = Base64.strict_decode64(encrypted_data)
       
-      # Extract IV (16 bytes), auth_tag (16 bytes), and encrypted data
-      iv = combined[0, 16]
-      auth_tag = combined[16, 16]
-      encrypted = combined[32..-1]
+      # Extract components (12-byte IV, 16-byte auth_tag, rest is data)
+      iv = combined[0..11]           # First 12 bytes
+      auth_tag = combined[12..27]    # Next 16 bytes  
+      encrypted = combined[28..-1]   # Rest is encrypted data
       
-      # Set up decryption
-      cipher = OpenSSL::Cipher.new(CIPHER_TYPE)
+      cipher = OpenSSL::Cipher.new('aes-256-gcm')
       cipher.decrypt
-      cipher.key = Digest::SHA256.digest(SECRET_KEY)
+      cipher.key = encryption_key
       cipher.iv = iv
       cipher.auth_tag = auth_tag
       
-      # Decrypt
       decrypted = cipher.update(encrypted) + cipher.final
       JSON.parse(decrypted)
     rescue => e
