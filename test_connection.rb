@@ -37,9 +37,9 @@ EventMachine.run do
     end
   end
   
-  puts "🚀 Test WebSocket server running on ws://localhost:9293"
+  puts "🚀 Test WebSocket server running on ws://localhost:9292"
   
   # Use a different port for testing
   require 'thin'
-  Thin::Server.new('0.0.0.0', 9293, App).start!
+  Thin::Server.new('0.0.0.0', 9292, App).start!
 end

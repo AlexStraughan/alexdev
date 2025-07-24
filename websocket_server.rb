@@ -1376,8 +1376,8 @@ if __FILE__ == $0
     Signal.trap('TERM') { EventMachine.stop }
     
     # For now, start without SSL - we'll use a reverse proxy approach instead
-    EventMachine.start_server('0.0.0.0', 9293, WebSocketConnection, game_server)
-    puts "🚀 WebSocket server running on ws://0.0.0.0:9293"
+    EventMachine.start_server('0.0.0.0', 9292, WebSocketConnection, game_server)
+    puts "🚀 WebSocket server running on ws://0.0.0.0:9292"
     puts "🔧 Note: Use Apache/Nginx proxy for SSL termination"
     puts "Press Ctrl+C to stop"
   end
