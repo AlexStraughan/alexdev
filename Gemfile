@@ -10,3 +10,5 @@ gem 'dotenv', '~> 3.0'
 gem "rackup", "~> 2.2"
 gem "puma", "~> 6.6"
 gem 'sqlite3'
+gem 'bcrypt', '~> 3.1.7'
+gem 'jwt'

@@ -6,6 +6,7 @@ require 'securerandom'
 require 'digest/sha1'
 require 'base64'
 require 'openssl'
+require_relative 'server/game_encryption'
 
 # Load environment variables from .env file if it exists
 begin
@@ -25,8 +26,10 @@ class GameWebSocketServer
     # Throttle broadcast_active_players to reduce console spam
     @last_broadcast_time = 0
     @broadcast_throttle_seconds = 30  # Only broadcast every 30 seconds max
+    # Store last known game states for validation
+    @last_game_states = {}
     setup_database
-    puts "🚀 WebSocket server initialized"
+    puts "🚀 WebSocket server initialized with encryption support"
   end
 
   def setup_database
@@ -49,6 +52,9 @@ class GameWebSocketServer
         upgrades_tab_unlocked BOOLEAN DEFAULT FALSE,
         last_active_time INTEGER DEFAULT 0,
         offline_earnings_rate REAL DEFAULT 0.4,
+        player_token TEXT,
+        last_save_hash TEXT,
+        last_validated_at INTEGER DEFAULT 0,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
@@ -63,6 +69,25 @@ class GameWebSocketServer
     
     begin
       @db.execute("ALTER TABLE game_states ADD COLUMN offline_earnings_rate REAL DEFAULT 0.4")
+    rescue SQLite3::SQLException => e
+      # Column already exists, ignore
+    end
+
+    # Add encryption/security columns
+    begin
+      @db.execute("ALTER TABLE game_states ADD COLUMN player_token TEXT")
+    rescue SQLite3::SQLException => e
+      # Column already exists, ignore
+    end
+    
+    begin
+      @db.execute("ALTER TABLE game_states ADD COLUMN last_save_hash TEXT")
+    rescue SQLite3::SQLException => e
+      # Column already exists, ignore
+    end
+    
+    begin
+      @db.execute("ALTER TABLE game_states ADD COLUMN last_validated_at INTEGER DEFAULT 0")
     rescue SQLite3::SQLException => e
       # Column already exists, ignore
     end
@@ -89,15 +114,28 @@ class GameWebSocketServer
 
   def handle_connection(connection)
     player_id = SecureRandom.uuid
+    
+    # Get client IP for security logging
+    client_ip = connection.env['REMOTE_ADDR'] || connection.env['HTTP_X_FORWARDED_FOR'] || 'unknown'
+    
+    # Check if IP is flagged as suspicious
+    if GameEncryption.is_suspicious_ip?(client_ip)
+      puts "🚨 Rejecting connection from suspicious IP: #{client_ip}"
+      connection.close_connection
+      return
+    end
+    
     @clients[player_id] = {
       connection: connection,
       player_id: player_id,
       player_name: nil,
       last_seen: Time.now,
-      registered: false
+      registered: false,
+      client_ip: client_ip,
+      connection_time: Time.now.to_i
     }
 
-    puts "🔌 Client connected: #{player_id}"
+    puts "🔌 Client connected: #{player_id} from #{client_ip}"
 
     # Send initial data
     send_to_client(player_id, {
@@ -201,8 +239,116 @@ class GameWebSocketServer
   end
 
   def handle_save_game_state(player_id, message)
+    client = @clients[player_id]
+    return unless client && client[:registered]
+    
+    # Rate limiting check
+    unless GameEncryption.check_rate_limit(player_id, 'save_game_state')
+      puts "🚫 Rate limit exceeded for player #{player_id}"
+      send_to_client(player_id, {
+        type: 'game_state_saved',
+        success: false,
+        error: 'Too many save attempts. Please wait before trying again.'
+      })
+      
+      # Flag IP as suspicious after multiple rate limit violations
+      GameEncryption.flag_suspicious_ip(client[:client_ip])
+      return
+    end
+    
+    # Verify token if present
+    secure_token = message['secure_token']
+    if secure_token
+      token_data = GameEncryption.verify_player_token(secure_token, player_id, client[:client_ip])
+      unless token_data
+        puts "🚫 Invalid or expired token for player #{player_id}"
+        send_to_client(player_id, {
+          type: 'game_state_saved',
+          success: false,
+          error: 'Authentication failed - please refresh the page'
+        })
+        return
+      end
+      
+      # Check message signature if present
+      if message['message_signature']
+        message_data = {
+          type: message['type'],
+          game_player_id: message['game_player_id'],
+          encrypted_state: message['encrypted_state'],
+          integrity_hash: message['integrity_hash']
+        }
+        
+        unless GameEncryption.verify_message_signature(message_data, message['message_signature'], secure_token)
+          puts "🚫 Message signature verification failed for player #{player_id}"
+          send_to_client(player_id, {
+            type: 'game_state_saved',
+            success: false,
+            error: 'Message integrity check failed'
+          })
+          return
+        end
+      end
+    else
+      puts "⚠️  No secure token provided for player #{player_id}"
+    end
+    
     game_player_id = message['game_player_id']
-    state = message['state']
+    encrypted_state = message['encrypted_state']
+    integrity_hash = message['integrity_hash']
+    
+    # Try to decrypt the game state
+    state = nil
+    if encrypted_state
+      state = GameEncryption.decrypt_game_data(encrypted_state)
+      unless state
+        puts "🚫 Failed to decrypt game state for player #{game_player_id}"
+        send_to_client(player_id, {
+          type: 'game_state_saved',
+          success: false,
+          error: 'Invalid game data format'
+        })
+        return
+      end
+    else
+      # Fallback to unencrypted for compatibility (remove this in production!)
+      state = message['state']
+      puts "⚠️  Received unencrypted game state - security risk!"
+    end
+    
+    # Verify integrity hash with enhanced validation
+    if integrity_hash && !GameEncryption.verify_integrity_hash(state, integrity_hash, true)
+      puts "🚫 Integrity check failed for player #{game_player_id}"
+      send_to_client(player_id, {
+        type: 'game_state_saved',
+        success: false,
+        error: 'Data integrity verification failed'
+      })
+      return
+    end
+    
+    # Get previous state for validation
+    previous_state = @last_game_states[game_player_id]
+    current_time = Time.now.to_i
+    
+    if previous_state
+      time_elapsed = current_time - (previous_state['last_validated_at'] || current_time - 60)
+      
+      # Enhanced game state validation
+      unless GameEncryption.validate_game_state_change(previous_state, state, time_elapsed, player_id)
+        puts "🚫 Invalid game state change detected for player #{game_player_id}"
+        
+        # Flag player for suspicious activity instead of banning
+        GameEncryption.flag_player_suspicious(game_player_id, "Invalid game state change detected", 'medium')
+        
+        send_to_client(player_id, {
+          type: 'game_state_saved',
+          success: false,
+          error: 'Unusual activity detected. Please play normally to avoid being flagged.'
+        })
+        return
+      end
+    end
     
     # Debug logging for infinite upgrades
     puts "💾 Saving game state for player: #{game_player_id}"
@@ -214,10 +360,13 @@ class GameWebSocketServer
         # Check if player exists
         existing = @db.execute("SELECT id FROM game_states WHERE player_id = ? LIMIT 1", [game_player_id])
         
+        # Create integrity hash for storage
+        save_hash = GameEncryption.create_integrity_hash(state)
+        
         if existing.empty?
           # Insert new player state
           @db.execute(
-            "INSERT INTO game_states (player_id, player_name, points, total_clicks, total_points_earned, click_power, crit_chance, crit_multiplier, generators, upgrades, achievements, game_hub_revealed, upgrades_tab_unlocked, last_active_time, offline_earnings_rate, infinite_upgrades) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO game_states (player_id, player_name, points, total_clicks, total_points_earned, click_power, crit_chance, crit_multiplier, generators, upgrades, achievements, game_hub_revealed, upgrades_tab_unlocked, last_active_time, offline_earnings_rate, infinite_upgrades, last_save_hash, last_validated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [
               game_player_id,
               state['player_name'],
@@ -234,13 +383,15 @@ class GameWebSocketServer
               state['upgrades_tab_unlocked'] ? 1 : 0,
               state['last_active_time'] || 0,
               state['offline_earnings_rate'] || 0.4,
-              JSON.generate(state['infiniteUpgrades'] || {})
+              JSON.generate(state['infiniteUpgrades'] || {}),
+              save_hash,
+              current_time
             ]
           )
         else
           # Update existing player state
           @db.execute(
-            "UPDATE game_states SET player_name = ?, points = ?, total_clicks = ?, total_points_earned = ?, click_power = ?, crit_chance = ?, crit_multiplier = ?, generators = ?, upgrades = ?, achievements = ?, game_hub_revealed = ?, upgrades_tab_unlocked = ?, last_active_time = ?, offline_earnings_rate = ?, infinite_upgrades = ?, updated_at = CURRENT_TIMESTAMP WHERE player_id = ?",
+            "UPDATE game_states SET player_name = ?, points = ?, total_clicks = ?, total_points_earned = ?, click_power = ?, crit_chance = ?, crit_multiplier = ?, generators = ?, upgrades = ?, achievements = ?, game_hub_revealed = ?, upgrades_tab_unlocked = ?, last_active_time = ?, offline_earnings_rate = ?, infinite_upgrades = ?, last_save_hash = ?, last_validated_at = ?, updated_at = CURRENT_TIMESTAMP WHERE player_id = ?",
             [
               state['player_name'],
               state['points'] || 0,
@@ -257,11 +408,17 @@ class GameWebSocketServer
               state['last_active_time'] || 0,
               state['offline_earnings_rate'] || 0.4,
               JSON.generate(state['infiniteUpgrades'] || {}),
+              save_hash,
+              current_time,
               game_player_id
             ]
           )
         end
       end
+      
+      # Store the validated state for future comparisons
+      state['last_validated_at'] = current_time
+      @last_game_states[game_player_id] = state
 
       send_to_client(player_id, {
         type: 'game_state_saved',
@@ -294,15 +451,44 @@ class GameWebSocketServer
     client = @clients[player_id]
     player_name = message['player_name']
     
-    client[:player_name] = player_name
+    # Basic validation
+    if !player_name || player_name.strip.empty? || player_name.length > 50
+      send_to_client(player_id, {
+        type: 'player_registered',
+        success: false,
+        error: 'Invalid player name'
+      })
+      return
+    end
+    
+    # Check for suspicious names (basic filtering)
+    if player_name.match?(/admin|script|bot|hack|cheat/i)
+      puts "🚫 Suspicious player name attempted: #{player_name} from #{client[:client_ip]}"
+      GameEncryption.flag_suspicious_ip(client[:client_ip])
+    end
+    
+    client[:player_name] = player_name.strip
     client[:registered] = true
+    
+    # Generate secure token with client IP
+    player_token = GameEncryption.generate_player_token(player_id, player_name, client[:client_ip])
+    client[:token] = player_token
+    
+    # Update player token in database
+    @db.execute(
+      "UPDATE game_states SET player_token = ? WHERE player_id = ?",
+      [player_token, player_id]
+    )
     
     send_to_client(player_id, {
       type: 'player_registered',
-      player_name: player_name
+      player_name: player_name,
+      secure_token: player_token
     })
 
     broadcast_active_players_force
+    
+    puts "👤 Player registered: #{player_name} (#{player_id}) from #{client[:client_ip]}"
   end
 
   def handle_chat_message(player_id, message)
@@ -403,6 +589,12 @@ class GameWebSocketServer
       handle_admin_list_players(player_id, message)
     when 'check_database'
       handle_admin_check_database(player_id, message)
+    when 'list_flagged'
+      handle_admin_list_flagged(player_id, message)
+    when 'flag_player'
+      handle_admin_flag_player(player_id, message)
+    when 'reinstate_player'
+      handle_admin_reinstate_player(player_id, message)
     when 'help'
       handle_admin_help(player_id, message)
     else
@@ -741,6 +933,11 @@ class GameWebSocketServer
       💥 RESET LEADERBOARD:
       {type: 'admin_command', password: 'admin123', command: 'reset_leaderboard', confirm: 'YES_DELETE_ALL'}
       
+      🚨 FLAG MANAGEMENT:
+      {type: 'admin_command', password: 'admin123', command: 'list_flagged'}
+      {type: 'admin_command', password: 'admin123', command: 'flag_player', target_player_id: 'player_123', reason: 'Manual flag', severity: 'medium'}
+      {type: 'admin_command', password: 'admin123', command: 'reinstate_player', target_player_id: 'player_123', notes: 'False positive'}
+      
       ❓ HELP:
       {type: 'admin_command', password: 'admin123', command: 'help'}
       
@@ -754,10 +951,140 @@ class GameWebSocketServer
     })
   end
 
-  def send_leaderboard_to_client(player_id)
-    players = @db.execute("SELECT player_id, player_name, total_points_earned, total_clicks, generators, upgrades, updated_at FROM game_states WHERE player_name IS NOT NULL ORDER BY total_points_earned DESC LIMIT 10")
+  def handle_admin_list_flagged(player_id, message)
+    flagged_players = GameEncryption.get_flagged_players
     
-    leaderboard = players.map do |row|
+    if flagged_players.empty?
+      send_to_client(player_id, {
+        type: 'admin_response',
+        success: true,
+        message: "No flagged players found."
+      })
+      return
+    end
+    
+    flagged_info = flagged_players.map do |player_id, info|
+      reasons = info[:reasons].map { |r| "#{r[:reason]} (#{r[:severity]}) at #{r[:timestamp]}" }
+      
+      player_name = nil
+      begin
+        result = @db.execute("SELECT player_name FROM game_states WHERE player_id = ? LIMIT 1", [player_id])
+        player_name = result.first&.first || "Unknown"
+      rescue => e
+        player_name = "Error: #{e.message}"
+      end
+      
+      <<~INFO
+        🚨 Player: #{player_name} (ID: #{player_id})
+        Hidden from leaderboard: #{info[:hidden_from_leaderboard] ? 'YES' : 'NO'}
+        Flagged at: #{info[:flagged_at]}
+        Reasons: #{reasons.join(', ')}
+        Admin notes: #{info[:admin_notes] || 'None'}
+        #{info[:reinstated_at] ? "Reinstated at: #{info[:reinstated_at]}" : ''}
+      INFO
+    end
+    
+    send_to_client(player_id, {
+      type: 'admin_response',
+      success: true,
+      message: "📋 FLAGGED PLAYERS:\n\n#{flagged_info.join("\n---\n")}"
+    })
+  end
+
+  def handle_admin_flag_player(player_id, message)
+    target_player_id = message['target_player_id']
+    reason = message['reason'] || 'Manual admin flag'
+    severity = message['severity'] || 'medium'
+    
+    unless target_player_id
+      send_to_client(player_id, {
+        type: 'admin_response',
+        success: false,
+        message: "Missing target_player_id parameter"
+      })
+      return
+    end
+    
+    # Check if player exists
+    player_exists = @db.execute("SELECT player_name FROM game_states WHERE player_id = ? LIMIT 1", [target_player_id])
+    if player_exists.empty?
+      send_to_client(player_id, {
+        type: 'admin_response',
+        success: false,
+        message: "Player #{target_player_id} not found in database"
+      })
+      return
+    end
+    
+    # Flag the player
+    flag_info = GameEncryption.flag_player_suspicious(target_player_id, reason, severity)
+    player_name = player_exists.first.first
+    
+    send_to_client(player_id, {
+      type: 'admin_response',
+      success: true,
+      message: "✅ Player #{player_name} (#{target_player_id}) has been flagged for: #{reason} (severity: #{severity})"
+    })
+    
+    # Refresh leaderboard for all clients
+    broadcast_leaderboard_update
+  end
+
+  def handle_admin_reinstate_player(player_id, message)
+    target_player_id = message['target_player_id']
+    admin_notes = message['notes'] || 'Reinstated by admin'
+    
+    unless target_player_id
+      send_to_client(player_id, {
+        type: 'admin_response',
+        success: false,
+        message: "Missing target_player_id parameter"
+      })
+      return
+    end
+    
+    # Check if player exists and is flagged
+    player_exists = @db.execute("SELECT player_name FROM game_states WHERE player_id = ? LIMIT 1", [target_player_id])
+    if player_exists.empty?
+      send_to_client(player_id, {
+        type: 'admin_response',
+        success: false,
+        message: "Player #{target_player_id} not found in database"
+      })
+      return
+    end
+    
+    # Reinstate the player
+    if GameEncryption.reinstate_player(target_player_id, admin_notes)
+      player_name = player_exists.first.first
+      send_to_client(player_id, {
+        type: 'admin_response',
+        success: true,
+        message: "✅ Player #{player_name} (#{target_player_id}) has been reinstated. Notes: #{admin_notes}"
+      })
+      
+      # Refresh leaderboard for all clients
+      broadcast_leaderboard_update
+    else
+      send_to_client(player_id, {
+        type: 'admin_response',
+        success: false,
+        message: "❌ Player #{target_player_id} was not flagged or could not be reinstated"
+      })
+    end
+  end
+
+  def send_leaderboard_to_client(player_id)
+    players = @db.execute("SELECT player_id, player_name, total_points_earned, total_clicks, generators, upgrades, updated_at FROM game_states WHERE player_name IS NOT NULL ORDER BY total_points_earned DESC LIMIT 20")
+    
+    # Filter out players who are hidden from leaderboard
+    filtered_players = players.select do |row|
+      player_db_id = row[0]
+      !GameEncryption.is_player_hidden_from_leaderboard?(player_db_id)
+    end
+    
+    # Take only top 10 after filtering
+    leaderboard = filtered_players.first(10).map do |row|
       {
         player_id: row[0],
         player_name: row[1],

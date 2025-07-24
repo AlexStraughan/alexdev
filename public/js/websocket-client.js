@@ -181,6 +181,13 @@ class GameWebSocketClient {
                     window.wsDebug.important('👤 Player registered:', message.player_name);
                     this.isRegistered = true;
                     this.playerName = message.player_name;
+                    
+                    // Store secure token if provided
+                    if (message.secure_token) {
+                        window.gameEncryption.setSecureToken(message.secure_token);
+                        window.wsDebug.important('🔒 Secure token received and stored');
+                    }
+                    
                     this.triggerCallbacks('player_registered', message);
                     break;
                 case 'chat_message':
@@ -330,12 +337,75 @@ class GameWebSocketClient {
         });
     }
 
-    saveGameState(gamePlayerId, state) {
-        this.send({
-            type: 'save_game_state',
-            game_player_id: gamePlayerId,
-            state: state
-        });
+    async saveGameState(gamePlayerId, state) {
+        try {
+            // Client-side rate limiting check
+            if (!window.gameEncryption.checkRateLimit()) {
+                console.warn('🚫 Client-side rate limit exceeded');
+                return;
+            }
+
+            // Validate state before sending
+            const lastState = JSON.parse(localStorage.getItem('lastGameState') || '{}');
+            if (!window.gameEncryption.validateGameState(lastState, state)) {
+                console.error('🚫 Game state validation failed, not saving');
+                return;
+            }
+
+            // Add timestamp to state
+            const timestampedState = window.gameEncryption.addTimestamp(state);
+            
+            // Create integrity hash
+            const integrityHash = await window.gameEncryption.createIntegrityHash(timestampedState);
+            
+            // Encrypt the game state
+            const encryptedState = await window.gameEncryption.encryptGameData(timestampedState);
+            
+            if (!encryptedState || !integrityHash) {
+                console.error('🚫 Failed to encrypt game state, falling back to unencrypted');
+                // Fallback to unencrypted for compatibility
+                this.send({
+                    type: 'save_game_state',
+                    game_player_id: gamePlayerId,
+                    state: timestampedState,
+                    secure_token: window.gameEncryption.getSecureToken()
+                });
+                return;
+            }
+
+            // Create message for signing
+            const messageData = {
+                type: 'save_game_state',
+                game_player_id: gamePlayerId,
+                encrypted_state: encryptedState,
+                integrity_hash: integrityHash
+            };
+
+            // Create message signature
+            const messageSignature = await window.gameEncryption.createMessageSignature(messageData);
+
+            // Send encrypted data with signature
+            this.send({
+                ...messageData,
+                message_signature: messageSignature,
+                secure_token: window.gameEncryption.getSecureToken()
+            });
+
+            // Store state for next validation
+            localStorage.setItem('lastGameState', JSON.stringify(timestampedState));
+            
+            window.wsDebug.log('🔒 Encrypted game state sent with signature');
+            
+        } catch (error) {
+            console.error('🚫 Error in saveGameState:', error);
+            // Fallback to basic save
+            this.send({
+                type: 'save_game_state',
+                game_player_id: gamePlayerId,
+                state: state,
+                secure_token: window.gameEncryption.getSecureToken()
+            });
+        }
     }
 
     registerPlayer(playerName) {
@@ -370,16 +440,42 @@ class GameWebSocketClient {
             // Send heartbeat with current game data
             let activityData = null;
             if (window.game && window.game.state) {
+                const currentTime = Date.now();
+                
                 activityData = {
                     score: window.game.state.totalPointsEarned || 0, // Use total points earned for leaderboard
                     current_points: window.game.state.points || 0, // Also send current spendable points
                     points_per_second: window.game.state.pointsPerSecond || 0,
-                    generators_owned: Object.values(window.game.state.generators || {}).reduce((sum, count) => sum + count, 0)
+                    generators_owned: Object.values(window.game.state.generators || {}).reduce((sum, count) => sum + count, 0),
+                    total_clicks: window.game.state.totalClicks || 0,
+                    session_duration: Math.floor((currentTime - (this.connectionTime || currentTime)) / 1000),
+                    client_timestamp: currentTime
                 };
-                // Reduced heartbeat console logs to reduce spam - now using debug mode
+                
+                // Add basic validation hash to heartbeat
+                if (window.gameEncryption) {
+                    activityData.validation_hash = this.createSimpleValidationHash(activityData);
+                }
             }
             this.sendHeartbeat(activityData);
         }, 10000); // Every 10 seconds for easier debugging
+    }
+
+    // Create a simple validation hash for heartbeat data
+    createSimpleValidationHash(data) {
+        try {
+            const validationString = `${data.score}_${data.current_points}_${data.total_clicks}_${data.client_timestamp}`;
+            // Simple hash using built-in methods
+            let hash = 0;
+            for (let i = 0; i < validationString.length; i++) {
+                const char = validationString.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            return hash.toString(16);
+        } catch (error) {
+            return 'invalid';
+        }
     }
 
     stopHeartbeat() {

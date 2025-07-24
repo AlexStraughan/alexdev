@@ -69,10 +69,18 @@ get '/api/leaderboard' do
       db.results_as_hash = true
       
       # Get players from game_states table, ordered by total_points_earned
-      players = db.execute('SELECT player_name, total_points_earned, total_clicks, generators, upgrades, updated_at FROM game_states WHERE player_name IS NOT NULL ORDER BY total_points_earned DESC LIMIT 10')
+      players = db.execute('SELECT player_id, player_name, total_points_earned, total_clicks, generators, upgrades, updated_at FROM game_states WHERE player_name IS NOT NULL ORDER BY total_points_earned DESC LIMIT 20')
+      
+      # Filter out players who are hidden from leaderboard
+      require_relative 'server/game_encryption'
+      filtered_players = players.select do |row|
+        player_db_id = row['player_id']
+        !GameEncryption.is_player_hidden_from_leaderboard?(player_db_id)
+      end
+      
       db.close
       
-      leaderboard = players.map do |row|
+      leaderboard = filtered_players.first(10).map do |row|
         {
           name: row['player_name'],
           score: row['total_points_earned'],
